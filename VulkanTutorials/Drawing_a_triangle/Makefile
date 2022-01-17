@@ -1,5 +1,5 @@
 CFLAGS = -std=c++17 -O2
-FILENAME = 00_base_code.cpp
+FILENAME = 01_creating_an_instance.cpp
 SOURCEDIR = src
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 Test: $(SOURCEDIR)/$(FILENAME)
