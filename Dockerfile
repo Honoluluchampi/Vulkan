@@ -9,6 +9,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # glfw(window api), glm(linear algebra for cg)
     libglfw3-dev libglm-dev \
     # dependency for glfw
-    libxi-dev libxxf86vm-dev
+    libxi-dev libxxf86vm-dev libxrandr-dev
 
 ENV DISPLAY host.docker.internal:0

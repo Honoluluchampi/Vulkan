@@ -29,7 +29,10 @@ private:
         // 4th arg : choosing monitor, 5th : only relevant to openGL
         window_m = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
     }
-    void initVulkan(){}
+    void initVulkan()
+    {
+        createInstance();
+    }
     void mainLoop()
     {
         while(!glfwWindowShouldClose(window_m)){
@@ -42,8 +45,36 @@ private:
         glfwDestroyWindow(window_m);
         glfwTerminate();
     }
+    // fill in a struct with some informattion about the application
+    void createInstance()
+    {
+        VkApplicationInfo appInfo{};
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        appInfo.pApplicationName = "Hello Triangle";
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.pEngineName = "No Engine";
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion = VK_API_VERSION_1_0;
+        VkInstanceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pApplicationInfo = &appInfo;
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);\
+        // determine the global validation layers to enable
+        createInfo.enabledExtensionCount = glfwExtensionCount;
+        createInfo.ppEnabledExtensionNames = glfwExtensions;
+        createInfo.enabledLayerCount = 0;
+        // check std::cout << glfwExtensionCount << std::endl;
+        // 1st : pointer to struct with creation info
+        // 2nd : pointer to custom allocator callbacks
+        // 3rd : pointer to the variable that stores the handle to the new object
+        if (vkCreateInstance(&createInfo, nullptr, &instance_m) != VK_SUCCESS)
+            throw std::runtime_error("failed to create instance!");
+    }
 
     GLFWwindow* window_m;
+    VkInstance instance_m;
 };
 
 int main()
