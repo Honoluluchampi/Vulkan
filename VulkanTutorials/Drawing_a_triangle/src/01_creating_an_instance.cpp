@@ -4,6 +4,7 @@
 #include <iostream>     
 #include <stdexcept> // report and propagate an error
 #include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
+#include <vector>
 
 constexpr uint32_t WIDTH = 800;
 constexpr uint32_t HEIGHT = 600;
@@ -45,6 +46,20 @@ private:
         glfwDestroyWindow(window_m);
         glfwTerminate();
     }
+
+    void checkingForExtensionSupport()
+    {
+        uint32_t extensionCount = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+        // each VkExtensionProperties contains the name and version of an extension
+        std::vector<VkExtensionProperties> extensions(extensionCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+        std::cout << "available extensions: \n";
+        for (const auto &extension : extensions) {
+            std::cout << '\t' << extension.extensionName << '\n';
+        }
+        // check wheather all glfwExtensions are supported
+    }
     // fill in a struct with some informattion about the application
     void createInstance()
     {
@@ -55,12 +70,15 @@ private:
         appInfo.pEngineName = "No Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
+
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
+
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);\
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        checkingForExtensionSupport();
         // determine the global validation layers to enable
         createInfo.enabledExtensionCount = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
