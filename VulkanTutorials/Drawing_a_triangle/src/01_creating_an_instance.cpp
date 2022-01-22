@@ -42,6 +42,7 @@ private:
     }
     void cleanup()
     {
+        vkDestroyInstance(instance_m, nullptr);
         // once window_m is closed, destroy resources and terminate glfw
         glfwDestroyWindow(window_m);
         glfwTerminate();
