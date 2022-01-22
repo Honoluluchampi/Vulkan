@@ -1,5 +1,5 @@
 CFLAGS = -std=c++17 -O2
-FILENAME = 01_creating_an_instance.cpp
+FILENAME = main.cpp
 SOURCEDIR = src
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 vulkan: $(SOURCEDIR)/$(FILENAME)
