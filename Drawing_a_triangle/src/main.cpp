@@ -4,10 +4,22 @@
 #include <iostream>     
 #include <stdexcept> // report and propagate an error
 #include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
+#include <cstring>
 #include <vector>
 
 constexpr uint32_t WIDTH = 800;
 constexpr uint32_t HEIGHT = 600;
+
+const std::vector<const char*> validationLayers = {
+    "VK_LAYER_KHRONOS_validation"
+};
+
+// determine wheather enable validation layers or not by using NDEBUG
+#ifdef NDEBUG  // not debug
+    const bool enableValidationLayers = false;
+#else
+    const bool enableValidationLayers = true;
+#endif
 
 class HelloTriangleApplication
 {
@@ -61,6 +73,27 @@ private:
         }
         // check wheather all glfwExtensions are supported
     }
+    // same as chckingForExtensionSupport()
+    bool checkValidationLayerSupport() {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+        // check if all of the layers in validationLayers exist in the availableLyaers
+        for (const char *layerName : validationLayers){
+            bool  layerFound = false;
+            for (const auto& layerProperties : availableLayers) {
+                if (strcmp(layerName, layerProperties.layerName) == 0) {
+                    layerFound = true;
+                    break;
+                }
+            }
+            if (!layerFound) {
+                return false;
+            }
+        }
+        return true;
+    }
     // fill in a struct with some informattion about the application
     void createInstance()
     {
@@ -80,10 +113,18 @@ private:
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
         checkingForExtensionSupport();
-        // determine the global validation layers to enable
         createInfo.enabledExtensionCount = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
-        createInfo.enabledLayerCount = 0;
+        // validation layers
+        if (enableValidationLayers && checkValidationLayerSupport()) {
+            throw std::runtime_error("validation layers requested, but not available!");
+        }
+        if (enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
+        }
+        else createInfo.enabledLayerCount = 0;
+        std::cout << createInfo.enabledLayerCount << std::endl;
         // check std::cout << glfwExtensionCount << std::endl;
         // 1st : pointer to struct with creation info
         // 2nd : pointer to custom allocator callbacks
