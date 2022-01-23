@@ -79,6 +79,10 @@ private:
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+        std::cout << "available layers :" << std::endl;
+        for (const auto &layerName : availableLayers) {
+            std::cout << "\t" << layerName.layerName << std::endl;
+        }
         // check if all of the layers in validationLayers exist in the availableLyaers
         for (const char *layerName : validationLayers){
             bool  layerFound = false;
@@ -116,7 +120,7 @@ private:
         createInfo.enabledExtensionCount = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
         // validation layers
-        if (enableValidationLayers && checkValidationLayerSupport()) {
+        if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
         }
         if (enableValidationLayers) {
@@ -124,8 +128,6 @@ private:
             createInfo.ppEnabledLayerNames = validationLayers.data();
         }
         else createInfo.enabledLayerCount = 0;
-        std::cout << createInfo.enabledLayerCount << std::endl;
-        // check std::cout << glfwExtensionCount << std::endl;
         // 1st : pointer to struct with creation info
         // 2nd : pointer to custom allocator callbacks
         // 3rd : pointer to the variable that stores the handle to the new object

@@ -8,6 +8,7 @@ vulkan: $(SOURCEDIR)/$(FILENAME)
 .PHONY: test clean
 
 test: vulkan
-	./vulkan
+	VK_LAYER_PATH=/usr/include/vulkan
+		./vulkan
 
 clean: rm -f vulkan

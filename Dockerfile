@@ -1,7 +1,9 @@
 FROM ubuntu:20.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    g++ gcc git wget make mesa-utils x11-apps
+    g++ gcc git wget make cmake mesa-utils x11-apps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     vulkan-tools libvulkan-dev \
     vulkan-validationlayers-dev spirv-tools \
@@ -12,3 +14,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxi-dev libxxf86vm-dev libxrandr-dev
 
 ENV DISPLAY host.docker.internal:0
+
+# wget //vulkansdk
+# tar -xzf vulkansdk-linux-x86_64-xxx.tar.gz
