@@ -1,0 +1,139 @@
+#define GLFW_INCLUDE_VULKAN // by putting this, vulkan.h is included in glfw3.h
+#include <GLFW/glfw3.h>
+//#include <vulkan/vulkan.h> // functions, structures, enumerations from LunarG SDK
+#include <iostream>     
+#include <stdexcept> // report and propagate an error
+#include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
+#include <cstring>
+#include <vector>
+#include "HelloTriangle.hpp"
+
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
+
+// init app's information variables
+HelloTriangleApplication::HelloTriangleApplication()
+{
+    validationLayers_m = {
+    "VK_LAYER_KHRONOS_validation"
+    };
+    #ifdef NDEBUG
+        enableValidationLayers_m = false;
+    #else
+        enableValidationLayers_m = true;
+    #endif
+}
+
+void HelloTriangleApplication::run()
+{
+    initWindow();
+    initVulkan();
+    mainLoop();
+    cleanup();
+}
+// init GLFW, create  window
+void HelloTriangleApplication::initWindow()
+{
+    glfwInit();
+    // disable openGL
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    // create actual window
+    // 4th arg : choosing monitor, 5th : only relevant to openGL
+    window_m = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+}
+// init validation layer, instance
+void HelloTriangleApplication::initVulkan()
+{
+    createInstance();
+}
+
+void HelloTriangleApplication::mainLoop()
+{
+    while (!glfwWindowShouldClose(window_m)){
+        glfwPollEvents();
+    }
+}
+
+void HelloTriangleApplication::cleanup()
+{
+    vkDestroyInstance(instance_m, nullptr);
+    // once window_m is closed, destroy resources and terminate glfw
+    glfwDestroyWindow(window_m);
+    glfwTerminate();
+}
+// fill in a struct with some informattion about the application
+void HelloTriangleApplication::createInstance()
+{
+    VkApplicationInfo appInfo{};
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.pApplicationName = "Hello Triangle";
+    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.pEngineName = "No Engine";
+    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.apiVersion = VK_API_VERSION_1_0;
+
+    VkInstanceCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    createInfo.pApplicationInfo = &appInfo;
+
+    uint32_t glfwExtensionCount = 0;
+    const char** glfwExtensions;
+    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    checkingForExtensionSupport();
+    createInfo.enabledExtensionCount = glfwExtensionCount;
+    createInfo.ppEnabledExtensionNames = glfwExtensions;
+    // validation layers
+    if (enableValidationLayers_m && !checkValidationLayerSupport()) {
+        throw std::runtime_error("validation layers requested, but not available!");
+    }
+    if (enableValidationLayers_m) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers_m.size());
+        createInfo.ppEnabledLayerNames = validationLayers_m.data();
+    }
+    else createInfo.enabledLayerCount = 0;
+    // 1st : pointer to struct with creation info
+    // 2nd : pointer to custom allocator callbacks
+    // 3rd : pointer to the variable that stores the handle to the new object
+    if (vkCreateInstance(&createInfo, nullptr, &instance_m) != VK_SUCCESS)
+        throw std::runtime_error("failed to create instance!");
+}
+
+void HelloTriangleApplication::checkingForExtensionSupport()
+{
+    uint32_t extensionCount = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+    // each VkExtensionProperties contains the name and version of an extension
+    std::vector<VkExtensionProperties> extensions(extensionCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+    std::cout << "available extensions: \n";
+    for (const auto &extension : extensions) {
+        std::cout << '\t' << extension.extensionName << '\n';
+    }
+    // check wheather all glfwExtensions are supported
+}
+// same as chckingForExtensionSupport()
+bool HelloTriangleApplication::checkValidationLayerSupport() {
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+    std::cout << "available layers :" << std::endl;
+    for (const auto &layerName : availableLayers) {
+        std::cout << "\t" << layerName.layerName << std::endl;
+    }
+    // check if all of the layers in validationLayers exist in the availableLyaers
+    for (const char *layerName : validationLayers_m){
+        bool  layerFound = false;
+        for (const auto& layerProperties : availableLayers) {
+            if (strcmp(layerName, layerProperties.layerName) == 0) {
+                layerFound = true;
+                break;
+            }
+        }
+        if (!layerFound) {
+            return false;
+        }
+    }
+    return true;
+}

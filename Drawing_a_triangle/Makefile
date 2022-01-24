@@ -1,14 +1,30 @@
+TARGET = HelloTriangleApplication
+COMPILER = g++
 CFLAGS = -std=c++17 -O2
-FILENAME = main.cpp
-SOURCEDIR = src
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
-vulkan: $(SOURCEDIR)/$(FILENAME)
-	g++ $(CFLAGS) -o vulkan $(SOURCEDIR)/$(FILENAME) $(LDFLAGS)
+#FILENAME = main.cpp
+SOURCEDIR = ./src
+SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
+LIBS = 
+INCLUDE = 
+OBJECTDIR = ./obj
+OBJECTS = $(addprefix $(OBJECTDIR)/, $(notdir $(SOURCES:.cpp=.o)))
+DEPENDS = $(OBJECTS:.o=.d)
 
-.PHONY: test clean
+$(TARGET): $(OBJECTS) $(LIBS)
+	$(COMPILER) -o $@ $^ $(LDFLAGS)
 
-test: vulkan
-	VK_LAYER_PATH=/usr/include/vulkan
-		./vulkan
+$(OBJECTDIR)/%.o: $(SOURCEDIR)/%.cpp
+	-mkdir -p $(OBJECTDIR)
+	$(COMPILER) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
-clean: rm -f vulkan
+all: clean $(TARGET)
+
+test:
+	./$(TARGET)
+
+clean:
+	-rm -f $(OBJECTDIR)
+	-rm -f $(notdir $(TARGET)) $(DEPENDS)
+
+-include $(DEPENDS)
