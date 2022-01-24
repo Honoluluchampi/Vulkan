@@ -1,5 +1,3 @@
-#define GLFW_INCLUDE_VULKAN // by putting this, vulkan.h is included in glfw3.h
-#include <GLFW/glfw3.h>
 //#include <vulkan/vulkan.h> // functions, structures, enumerations from LunarG SDK
 #include <iostream>     
 #include <stdexcept> // report and propagate an error
@@ -46,7 +44,11 @@ void HelloTriangleApplication::initWindow()
 void HelloTriangleApplication::initVulkan()
 {
     createInstance();
-    setupDebugMessenger();
+    if(enableValidationLayers_m){
+        // Allocate debugger 
+        upDebugger_m.reset(new VkDebugger());
+        upDebugger_m->setupDebugMessenger(instance_m);
+    }
 }
 
 void HelloTriangleApplication::mainLoop()
@@ -59,7 +61,7 @@ void HelloTriangleApplication::mainLoop()
 void HelloTriangleApplication::cleanup()
 {
     if (enableValidationLayers_m)
-        DestroyDebugUtilsMessengerEXT(instance_m, debugMessenger_m, nullptr);
+        upDebugger_m->destroyDebugUtilsMessengerEXT(instance_m, nullptr);
     vkDestroyInstance(instance_m, nullptr);
     // once window_m is closed, destroy resources and terminate glfw
     glfwDestroyWindow(window_m);
@@ -164,61 +166,4 @@ std::vector<const char*> HelloTriangleApplication::getRequiredExtensions()
     for(const auto& extensions : extensions)
         std::cout << "\t" << extensions << std::endl;
     return extensions;
-}
-
-VKAPI_ATTR VkBool32 VKAPI_CALL HelloTriangleApplication::debugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-    void *pUserData)
-{
-    std::cerr << "validation layer:" << pCallbackData->pMessage << std::endl;
-    return VK_FALSE;
-}
-// fix this function to control debug call back of the apps
-void HelloTriangleApplication::setupDebugMessenger()
-{
-    if(!enableValidationLayers_m) return;
-    // fill in a structure with details about the meszsenger and its callback
-    VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-    createInfo.sType = 
-        VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity =
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    createInfo.messageType = 
-        VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    // Pointer to FunctionN
-    createInfo.pfnUserCallback = debugCallback;
-    createInfo.pUserData = nullptr; // optional
-}
-
-VkResult HelloTriangleApplication::VkCreateDebugUtilsMessengerEXT(
-    VkInstance instance,
-    const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-    const VkAllocationCallbacks* pAllocator,
-    VkDebugUtilsMessengerEXT* pDebugMessenger)
-{
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)
-        // create the extension object if its available
-        // Since the debug messenger is specific to our Vulkan instance and its layers, it needs to be explicitly specified as first argument.
-        vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    }
-    else return VK_ERROR_EXTENSION_NOT_PRESENT;
-}
-
-void HelloTriangleApplication::DestroyDebugUtilsMessengerEXT(
-    VkInstance instance,
-    VkDebugUtilsMessengerEXT debugMessenger,
-    const VkAllocationCallbacks* pAllocator)
-{
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)
-        vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    // execute  destruction
-    if (func != nullptr) func(instance, debugMessenger, pAllocator);
 }
