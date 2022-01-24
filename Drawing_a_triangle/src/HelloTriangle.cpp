@@ -95,11 +95,18 @@ void HelloTriangleApplication::createInstance()
     if (enableValidationLayers_m && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
+    // additional debugger for vkCreateInstance and vkDestroyInstance
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (enableValidationLayers_m) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers_m.size());
         createInfo.ppEnabledLayerNames = validationLayers_m.data();
+        VkDebugger::populateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
     }
-    else createInfo.enabledLayerCount = 0;
+    else {
+        createInfo.enabledLayerCount = 0;
+        createInfo.pNext = nullptr;
+    }
     // 1st : pointer to struct with creation info
     // 2nd : pointer to custom allocator callbacks
     // 3rd : pointer to the variable that stores the handle to the new object

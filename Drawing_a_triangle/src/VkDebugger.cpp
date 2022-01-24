@@ -14,8 +14,18 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkDebugger::debugCallback(
 void VkDebugger::setupDebugMessenger(VkInstance& instance)
 {
     // fill in a structure with details about the meszsenger and its callback
-    VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-    createInfo.sType = 
+    VkDebugUtilsMessengerCreateInfoEXT createInfo;
+    populateDebugMessengerCreateInfo(createInfo);
+    // create debug messenger
+    if (createDebugUtilsMessengerEXT(instance,  &createInfo, nullptr, &debugMessenger_m) != VK_SUCCESS)
+        throw std::runtime_error("faild to set up debug messenger!");
+}
+
+void VkDebugger::populateDebugMessengerCreateInfo(
+    VkDebugUtilsMessengerCreateInfoEXT& createInfo)
+{
+    createInfo = {};
+    createInfo.sType =
         VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity =
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -25,12 +35,8 @@ void VkDebugger::setupDebugMessenger(VkInstance& instance)
         VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    // Pointer to FunctionN
-    createInfo.pfnUserCallback = VkDebugger::debugCallback;
-    createInfo.pUserData = nullptr; // optional
-    // create debug messenger
-    if (createDebugUtilsMessengerEXT(instance,  &createInfo, nullptr, &debugMessenger_m) != VK_SUCCESS)
-        throw std::runtime_error("faild to set up debug messenger!");
+    createInfo.pfnUserCallback = debugCallback;
+    createInfo.pUserData = nullptr;
 }
 
 VkResult VkDebugger::createDebugUtilsMessengerEXT(
