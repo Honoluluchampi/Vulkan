@@ -19,6 +19,7 @@ private:
     void checkingForExtensionSupport();
     bool checkValidationLayerSupport();
     void createInstance();
+    void pickPhysicalDevice();
     // message callback
     std::vector<const char*> getRequiredExtensions();
     // variables
@@ -28,4 +29,6 @@ private:
     bool enableValidationLayers_m;
     // original debugger
     std::unique_ptr<VkDebugger> upDebugger_m;
+    // implicitly destroyed when vkInstance is destroyed
+    VkPhysicalDevice physicalDevice_m;
 };
