@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <memory>
 #include "VkDebugger.hpp"
+#include "VkDeviceManager.hpp"
 
 class HelloTriangleApplication
 {
@@ -19,7 +20,6 @@ private:
     void checkingForExtensionSupport();
     bool checkValidationLayerSupport();
     void createInstance();
-    void pickPhysicalDevice();
     // message callback
     std::vector<const char*> getRequiredExtensions();
     // variables
@@ -29,6 +29,5 @@ private:
     bool enableValidationLayers_m;
     // original debugger
     std::unique_ptr<VkDebugger> upDebugger_m;
-    // implicitly destroyed when vkInstance is destroyed
-    VkPhysicalDevice physicalDevice_m;
+    std::unique_ptr<VkDeviceManager> upDeviceManager_m;
 };
