@@ -1,6 +1,7 @@
 #include "VkDeviceManager.hpp"
 #include <stdexcept>
 #include <iostream>
+#include <set>
 
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {
@@ -32,7 +33,8 @@ void VkDeviceManager::pickPhysicalDevice(VkInstance& instance)
         throw std::runtime_error("failed to find a suitable GPU!");
     }
 }
-
+// ensure there is at least one available physical device and
+// the debice can present images to the surface we created
 bool VkDeviceManager::isDeviceSuitable(const VkPhysicalDevice& device) 
 {
     // VkPhysicalDeviceProperties deviceProperties; 
@@ -58,10 +60,16 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies(const VkP
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
     // check whether at least one queueFamily support VK_QUEUEGRAPHICS_BIT
     int i = 0;
+    VkBool32 presentSupport = false;
     for (const auto& queueFamily : queueFamilies){
+        // same i for presentFamily and graphicsFamily improves the performance
+        // vulkan: No DRI3 support detected - required for presentation
+        // Note: you can probably enable DRI3 in your Xorg config
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface_m, &presentSupport);
+        if (presentSupport) indices.presentFamily_m = i;
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphicsFamily_m = i;
-            break;
+            if(presentSupport) break;
         }
         i++;
     }
@@ -70,29 +78,38 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies(const VkP
 
 inline bool VkDeviceManager::QueueFamilyIndices::isComplete()
 {
-    return graphicsFamily_m.has_value();
+    return graphicsFamily_m.has_value() && presentFamily_m.has_value();
 }
 
 void VkDeviceManager::createLogicalDevice
     (const bool& enableValidationLayers, const std::vector<const char*>& validationLayers)
 {
     auto indices = findQueueFamilies(physicalDevice_m);
-    // VkDeviceQueueCreateInfo descrives the number of queues we want for a single queue family
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = indices.graphicsFamily_m.value();
-    queueCreateInfo.queueCount = 1;
-    // Vulkan lets us assign priorities to queues to influence the scheduling of commmand buffer execut9on
-    // using floating point numbers between 0.0 and 1.0
+    // create a set of all unique queue famililes that are necessary for required queues
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    // if queue families are the same, handle for those queues are also same
+    std::set<uint32_t> uniqueQueueFamilies = 
+    {indices.graphicsFamily_m.value(), indices.presentFamily_m.value()};
     float queuePriority = 1.0f;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    for (uint32_t queueFamily : uniqueQueueFamilies) {
+        // VkDeviceQueueCreateInfo descrives the number of queues we want for a single queue family
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = 
+            VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = queueFamily;
+        queueCreateInfo.queueCount = 1;
+        // Vulkan lets us assign priorities to queues to influence the scheduling of commmand buffer execut9on
+        // using floating point numbers between 0.0 and 1.0
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+        queueCreateInfos.push_back(queueCreateInfo);
+    }
     // we need nothing special right now
     VkPhysicalDeviceFeatures deviceFeatures{};
     // filling in the main VkDeviceCreateInfo structure;
     VkDeviceCreateInfo createInfo{};
     createInfo.sType =  VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
-    createInfo.queueCreateInfoCount = 1;
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+    createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     // nothing right now
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = 0;
@@ -111,6 +128,7 @@ void VkDeviceManager::createLogicalDevice
     // retrieve queue handles for each queue family
     // simply use index 0, because were only creating a single queue from  this family
     vkGetDeviceQueue(device_m, indices.graphicsFamily_m.value(), 0, &graphicsQueue_m);
+    vkGetDeviceQueue(device_m, indices.presentFamily_m.value(), 0, &presentQueue_m);
 }
 
 void VkDeviceManager::createSurface
