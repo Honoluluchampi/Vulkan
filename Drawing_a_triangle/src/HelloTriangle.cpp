@@ -51,6 +51,7 @@ void HelloTriangleApplication::initVulkan()
     }
     upDeviceManager_m.reset(new VkDeviceManager());
     upDeviceManager_m->pickPhysicalDevice(instance_m);
+    upDeviceManager_m->createLogicalDevice(enableValidationLayers_m, validationLayers_m);
 }
 
 void HelloTriangleApplication::mainLoop()
@@ -62,6 +63,8 @@ void HelloTriangleApplication::mainLoop()
 
 void HelloTriangleApplication::cleanup()
 {
+    // destroy logical device in its destructor
+    upDeviceManager_m.reset();
     if (enableValidationLayers_m)
         upDebugger_m->destroyDebugUtilsMessengerEXT(instance_m, nullptr);
     vkDestroyInstance(instance_m, nullptr);

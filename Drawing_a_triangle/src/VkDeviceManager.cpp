@@ -1,7 +1,12 @@
 #include "VkDeviceManager.hpp"
 #include <stdexcept>
-#include <vector>
+#include <iostream>
 
+VkDeviceManager::~VkDeviceManager()
+{
+    // VkQueue is automatically destroyed when its device is deleted
+    vkDestroyDevice(device_m,nullptr);
+}
 // get apps VkInstance
 void VkDeviceManager::pickPhysicalDevice(VkInstance& instance)
 {
@@ -34,12 +39,11 @@ bool VkDeviceManager::isDeviceSuitable(const VkPhysicalDevice& device)
     // vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
     // return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU 
     //     && deviceFeatures.geometryShader;
-    QueueFamilyIndices indices = findQueueFamilies(device);
+    auto indices = findQueueFamilies(device);
     return indices.isComplete();
 }
 
-VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies
-    (const VkPhysicalDevice& device)
+VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies(const VkPhysicalDevice& device)
 {
     VkDeviceManager::QueueFamilyIndices indices;
     // retrieve the list of quque families 
@@ -67,7 +71,42 @@ inline bool VkDeviceManager::QueueFamilyIndices::isComplete()
     return graphicsFamily_m.has_value();
 }
 
-void VkDeviceManager::createLogicalDevice()
+void VkDeviceManager::createLogicalDevice
+    (const bool& enableValidationLayers, const std::vector<const char*>& validationLayers)
 {
-    
+    auto indices = findQueueFamilies(physicalDevice_m);
+    // VkDeviceQueueCreateInfo descrives the number of queues we want for a single queue family
+    VkDeviceQueueCreateInfo queueCreateInfo{};
+    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo.queueFamilyIndex = indices.graphicsFamily_m.value();
+    queueCreateInfo.queueCount = 1;
+    // Vulkan lets us assign priorities to queues to influence the scheduling of commmand buffer execut9on
+    // using floating point numbers between 0.0 and 1.0
+    float queuePriority = 1.0f;
+    queueCreateInfo.pQueuePriorities = &queuePriority;
+    // we need nothing special right now
+    VkPhysicalDeviceFeatures deviceFeatures{};
+    // filling in the main VkDeviceCreateInfo structure;
+    VkDeviceCreateInfo createInfo{};
+    createInfo.sType =  VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.pQueueCreateInfos = &queueCreateInfo;
+    createInfo.queueCreateInfoCount = 1;
+    // nothing right now
+    createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.enabledExtensionCount = 0;
+    if (enableValidationLayers) {
+        createInfo.enabledLayerCount =
+            static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    }
+    else {
+        createInfo.enabledLayerCount = 0;
+    }
+    // instantiate the logical device
+    // logical devices dont interact directly with  instances 
+    if (vkCreateDevice(physicalDevice_m, &createInfo, nullptr, &device_m) != VK_SUCCESS)
+        throw std::runtime_error("failed to create logical device!");
+    // retrieve queue handles for each queue family
+    // simply use index 0, because were only creating a single queue from  this family
+    vkGetDeviceQueue(device_m, indices.graphicsFamily_m.value(), 0, &graphicsQueue_m);
 }
