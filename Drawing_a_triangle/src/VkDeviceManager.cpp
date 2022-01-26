@@ -2,10 +2,12 @@
 #include <stdexcept>
 #include <iostream>
 
-VkDeviceManager::~VkDeviceManager()
+void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {
     // VkQueue is automatically destroyed when its device is deleted
     vkDestroyDevice(device_m,nullptr);
+    // surface destruction
+    vkDestroySurfaceKHR(instance, surface_m, nullptr);
 }
 // get apps VkInstance
 void VkDeviceManager::pickPhysicalDevice(VkInstance& instance)
@@ -109,4 +111,13 @@ void VkDeviceManager::createLogicalDevice
     // retrieve queue handles for each queue family
     // simply use index 0, because were only creating a single queue from  this family
     vkGetDeviceQueue(device_m, indices.graphicsFamily_m.value(), 0, &graphicsQueue_m);
+}
+
+void VkDeviceManager::createSurface
+    (const VkInstance& instance, GLFWwindow* window)
+{
+    // glfwCreateWindowSurface is implemented to multi-platfowm
+    // we dont have to implement createSurface function using platform-specific extension
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface_m) != VK_SUCCESS)
+        throw std::runtime_error("failed to create window surface!");
 }

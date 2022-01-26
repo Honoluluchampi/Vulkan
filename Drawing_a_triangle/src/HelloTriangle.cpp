@@ -44,12 +44,15 @@ void HelloTriangleApplication::initWindow()
 void HelloTriangleApplication::initVulkan()
 {
     createInstance();
+    // window surface should be created right after the
+    // instance creation, because it can actually influence the physical device selection
     if(enableValidationLayers_m){
         // Allocate debugger 
         upDebugger_m.reset(new VkDebugger());
         upDebugger_m->setupDebugMessenger(instance_m);
     }
     upDeviceManager_m.reset(new VkDeviceManager());
+    upDeviceManager_m->createSurface(instance_m, window_m);
     upDeviceManager_m->pickPhysicalDevice(instance_m);
     upDeviceManager_m->createLogicalDevice(enableValidationLayers_m, validationLayers_m);
 }
@@ -64,6 +67,7 @@ void HelloTriangleApplication::mainLoop()
 void HelloTriangleApplication::cleanup()
 {
     // destroy logical device in its destructor
+    upDeviceManager_m->deviceCleanup(instance_m);
     upDeviceManager_m.reset();
     if (enableValidationLayers_m)
         upDebugger_m->destroyDebugUtilsMessengerEXT(instance_m, nullptr);
