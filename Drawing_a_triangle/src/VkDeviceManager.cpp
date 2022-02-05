@@ -223,7 +223,7 @@ VkExtent2D VkDeviceManager::chooseSwapExtent(const
     if (capabilities.currentExtent.width != UINT32_MAX) {
         return capabilities.currentExtent;
     } else {
-        VkExtent2D actualExtent = {windowSize_m.width_m, windowSize_m.height_m};
+        VkExtent2D actualExtent = swapChainExtent_m;
         actualExtent.width = 
             std::max(capabilities.minImageExtent.width,
             std::min(capabilities.maxImageExtent.width,
@@ -288,4 +288,10 @@ void VkDeviceManager::createSwapChain()
     if (vkCreateSwapchainKHR(device_m, &createInfo, nullptr, &swapChain_m) != VK_SUCCESS) {
         throw std::runtime_error("failed to create swap chain!");
     }
+    // retrieving the handles of images in the swap chain
+    vkGetSwapchainImagesKHR(device_m, swapChain_m, &imageCount, nullptr);
+    swapChainImages_m.resize(imageCount);
+    vkGetSwapchainImagesKHR(device_m, swapChain_m, &imageCount, swapChainImages_m.data());
+    swapChainImageFormat_m = surfaceFormat.format;
+    swapChainExtent_m = extent;
 }

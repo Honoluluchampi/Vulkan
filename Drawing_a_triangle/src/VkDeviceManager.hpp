@@ -27,7 +27,7 @@ class VkDeviceManager
     };
 public:
     VkDeviceManager(const uint32_t width, const uint32_t height)
-        : windowSize_m(width, height){}
+        : swapChainExtent_m{width, height}{}
     // relevant to physicaldevice
     void pickPhysicalDevice(VkInstance& instance);
     // relevant to logical device
@@ -67,6 +67,9 @@ private:
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
     // swap chain
-    WindowSize windowSize_m;
     VkSwapchainKHR swapChain_m;
+    // handles of the VkImages in the swap chain
+    std::vector<VkImage> swapChainImages_m;
+    VkFormat swapChainImageFormat_m;
+    VkExtent2D swapChainExtent_m;
 };
