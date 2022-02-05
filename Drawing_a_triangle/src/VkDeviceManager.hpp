@@ -14,12 +14,20 @@ class VkDeviceManager
     };
     struct SwapChainSupportDetails
     {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
+        VkSurfaceCapabilitiesKHR capabilities_m;
+        std::vector<VkSurfaceFormatKHR> formats_m;
+        std::vector<VkPresentModeKHR> presentModes_m;
     };
-
+    struct WindowSize
+    {
+        uint32_t width_m;
+        uint32_t height_m;
+        WindowSize(uint32_t width, uint32_t height) : 
+            width_m(width), height_m(height) {} 
+    };
 public:
+    VkDeviceManager(const uint32_t width, const uint32_t height)
+        : windowSize_m(width, height){}
     // relevant to physicaldevice
     void pickPhysicalDevice(VkInstance& instance);
     // relevant to logical device
@@ -27,17 +35,24 @@ public:
         (const bool& enableValidationLayers, const std::vector<const char*>& validationLayers);
     void createSurface(const VkInstance& instance, GLFWwindow* window);
     void deviceCleanup(const VkInstance& instance);
+    void createSwapChain();
     
 private:
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);
     bool isDeviceSuitable(const VkPhysicalDevice& device);
     // check for swap chain extension
     bool checkDeviceExtensionSupport(const VkPhysicalDevice& device);
-    auto querySwapChainSupport(const VkPhysicalDevice& device);
+    SwapChainSupportDetails querySwapChainSupport(const VkPhysicalDevice& device);
     // choosing the right settings for the swap chain
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const
         std::vector<VkSurfaceFormatKHR>& availableFormats);
-        
+    // most important settings for swap chain
+    VkPresentModeKHR chooseSwapPresentMode(const
+        std::vector<VkPresentModeKHR>& availablePresentModes);
+    // choose resolution of output
+    VkExtent2D chooseSwapExtent(const
+        VkSurfaceCapabilitiesKHR& capabilities);
+
     // implicitly destroyed when vkInstance is destroyed
     VkPhysicalDevice physicalDevice_m = VK_NULL_HANDLE;
     // logical device
@@ -51,4 +66,7 @@ private:
     {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
+    // swap chain
+    WindowSize windowSize_m;
+    VkSwapchainKHR swapChain_m;
 };

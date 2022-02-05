@@ -51,10 +51,11 @@ void HelloTriangleApplication::initVulkan()
         upDebugger_m.reset(new VkDebugger());
         upDebugger_m->setupDebugMessenger(instance_m);
     }
-    upDeviceManager_m.reset(new VkDeviceManager());
+    upDeviceManager_m.reset(new VkDeviceManager(WIDTH, HEIGHT));
     upDeviceManager_m->createSurface(instance_m, window_m);
     upDeviceManager_m->pickPhysicalDevice(instance_m);
     upDeviceManager_m->createLogicalDevice(enableValidationLayers_m, validationLayers_m);
+    upDeviceManager_m->createSwapChain();
 }
 
 void HelloTriangleApplication::mainLoop()
