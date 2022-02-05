@@ -34,6 +34,10 @@ private:
     // check for swap chain extension
     bool checkDeviceExtensionSupport(const VkPhysicalDevice& device);
     auto querySwapChainSupport(const VkPhysicalDevice& device);
+    // choosing the right settings for the swap chain
+    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const
+        std::vector<VkSurfaceFormatKHR>& availableFormats);
+        
     // implicitly destroyed when vkInstance is destroyed
     VkPhysicalDevice physicalDevice_m = VK_NULL_HANDLE;
     // logical device
