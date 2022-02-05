@@ -7,6 +7,9 @@
 
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {
+    for (auto& imageView : swapChainImageViews_m) {
+        vkDestroyImageView(device_m, imageView, nullptr);
+    }
     // destroy swap chain before a logical device
     vkDestroySwapchainKHR(device_m, swapChain_m, nullptr);
     // VkQueue is automatically destroyed when its device is deleted
@@ -294,4 +297,33 @@ void VkDeviceManager::createSwapChain()
     vkGetSwapchainImagesKHR(device_m, swapChain_m, &imageCount, swapChainImages_m.data());
     swapChainImageFormat_m = surfaceFormat.format;
     swapChainExtent_m = extent;
+}
+
+void VkDeviceManager::createImageViews()
+{
+    // create image view for all VkImage in the swap chain
+    swapChainImageViews_m.resize(swapChainImages_m.size());
+    for (size_t i = 0; i < swapChainImages_m.size(); i++) {
+        VkImageViewCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image = swapChainImages_m[i];
+        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.format = swapChainImageFormat_m;
+        // swizzle the color channeld around
+        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        // subresourceRange describes what images purpose is 
+        // and which part of the image should be accessed
+        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;
+        if (vkCreateImageView(device_m, &createInfo, nullptr,
+            &swapChainImageViews_m[i]) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create image views!");
+        }
+    }
 }

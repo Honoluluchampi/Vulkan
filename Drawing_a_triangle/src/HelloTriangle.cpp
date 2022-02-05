@@ -56,6 +56,7 @@ void HelloTriangleApplication::initVulkan()
     upDeviceManager_m->pickPhysicalDevice(instance_m);
     upDeviceManager_m->createLogicalDevice(enableValidationLayers_m, validationLayers_m);
     upDeviceManager_m->createSwapChain();
+    upDeviceManager_m->createImageViews();
 }
 
 void HelloTriangleApplication::mainLoop()

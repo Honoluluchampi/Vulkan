@@ -18,13 +18,7 @@ class VkDeviceManager
         std::vector<VkSurfaceFormatKHR> formats_m;
         std::vector<VkPresentModeKHR> presentModes_m;
     };
-    struct WindowSize
-    {
-        uint32_t width_m;
-        uint32_t height_m;
-        WindowSize(uint32_t width, uint32_t height) : 
-            width_m(width), height_m(height) {} 
-    };
+
 public:
     VkDeviceManager(const uint32_t width, const uint32_t height)
         : swapChainExtent_m{width, height}{}
@@ -36,6 +30,7 @@ public:
     void createSurface(const VkInstance& instance, GLFWwindow* window);
     void deviceCleanup(const VkInstance& instance);
     void createSwapChain();
+    void createImageViews();
     
 private:
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);
@@ -72,4 +67,6 @@ private:
     std::vector<VkImage> swapChainImages_m;
     VkFormat swapChainImageFormat_m;
     VkExtent2D swapChainExtent_m;
+    // image views
+    std::vector<VkImageView> swapChainImageViews_m;
 };
