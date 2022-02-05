@@ -1,6 +1,6 @@
 TARGET = HelloTriangleApplication
 COMPILER = g++
-CFLAGS = -std=c++20 -O2
+CFLAGS = -std=c++20 -O2 -g3
 VULKANDIR = /Users/toyotariku/VulkanSDK/1.2.198.1/macOS
 GLFWDIR = /usr/local/Cellar/glfw/3.3.6
 LDFLAGS = $(VULKANDIR)/lib/libvulkan.1.2.198.dylib $(VULKANDIR)/lib/libvulkan.1.dylib $(GLFWDIR)/lib/libglfw.3.3.dylib

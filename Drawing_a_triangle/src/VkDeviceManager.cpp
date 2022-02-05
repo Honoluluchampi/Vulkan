@@ -44,7 +44,31 @@ bool VkDeviceManager::isDeviceSuitable(const VkPhysicalDevice& device)
     // return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU 
     //     && deviceFeatures.geometryShader;
     auto indices = findQueueFamilies(device);
-    return indices.isComplete();
+    bool extensionsSupported = checkDeviceExtensionSupport(device);
+    bool swapChainAdequate = false;
+    if (extensionsSupported) {
+        auto swapChainSupport = querySwapChainSupport(device);
+        swapChainAdequate = !swapChainSupport.formats.empty() && 
+            !swapChainSupport.presentModes.empty();
+    }
+    return indices.isComplete() && extensionsSupported 
+        && swapChainAdequate;
+}
+
+// check for swap chain extension
+bool VkDeviceManager::checkDeviceExtensionSupport(const VkPhysicalDevice& device)
+{
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(device, nullptr,
+        &extensionCount, nullptr);
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, 
+        &extensionCount, availableExtensions.data());
+    std::set<std::string> requiredExtensions(deviceExtensions_m.begin(), deviceExtensions_m.end());
+    for (const auto& extension : availableExtensions) {
+        requiredExtensions.erase(extension.extensionName);
+    }
+    return requiredExtensions.empty();
 }
 
 VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies(const VkPhysicalDevice& device)
@@ -112,7 +136,9 @@ void VkDeviceManager::createLogicalDevice
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     // nothing right now
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = 0;
+    // enable device extension 
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions_m.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions_m.data();
     if (enableValidationLayers) {
         createInfo.enabledLayerCount =
             static_cast<uint32_t>(validationLayers.size());
@@ -138,4 +164,26 @@ void VkDeviceManager::createSurface
     // we dont have to implement createSurface function using platform-specific extension
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface_m) != VK_SUCCESS)
         throw std::runtime_error("failed to create window surface!");
+}
+
+auto VkDeviceManager::querySwapChainSupport(const VkPhysicalDevice& device)
+{
+    SwapChainSupportDetails details;
+    // surface capabilities
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface_m, &details.capabilities);
+    // surface format list
+    uint32_t formatCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface_m, &formatCount, nullptr);
+    if (formatCount != 0) {
+        details.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface_m, &formatCount, details.formats.data());
+    }
+    // presentation mode list
+    uint32_t presentModeCount;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface_m, &presentModeCount, nullptr);
+    if (presentModeCount != 0) {
+        details.presentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface_m, &presentModeCount, details.presentModes.data());
+    }
+    return details;
 }

@@ -12,6 +12,13 @@ class VkDeviceManager
         std::optional<uint32_t> presentFamily_m;
         inline bool isComplete();
     };
+    struct SwapChainSupportDetails
+    {
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
+
 public:
     // relevant to physicaldevice
     void pickPhysicalDevice(VkInstance& instance);
@@ -24,6 +31,9 @@ public:
 private:
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);
     bool isDeviceSuitable(const VkPhysicalDevice& device);
+    // check for swap chain extension
+    bool checkDeviceExtensionSupport(const VkPhysicalDevice& device);
+    auto querySwapChainSupport(const VkPhysicalDevice& device);
     // implicitly destroyed when vkInstance is destroyed
     VkPhysicalDevice physicalDevice_m = VK_NULL_HANDLE;
     // logical device
@@ -32,4 +42,9 @@ private:
     // window surface
     VkSurfaceKHR surface_m;
     VkQueue presentQueue_m;
+    // requied extensions name
+    std::vector<const char*> deviceExtensions_m =
+    {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
 };
