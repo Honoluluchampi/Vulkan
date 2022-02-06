@@ -4,13 +4,13 @@
 #include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
 #include <cstring>
 #include <vector>
-#include "HelloTriangle.hpp"
+#include "Application.hpp"
 
 constexpr uint32_t WIDTH = 800;
 constexpr uint32_t HEIGHT = 600;
 
 // init app's information variables
-HelloTriangleApplication::HelloTriangleApplication()
+Application::Application()
 {
     validationLayers_m = {
     "VK_LAYER_KHRONOS_validation"
@@ -22,7 +22,7 @@ HelloTriangleApplication::HelloTriangleApplication()
     #endif
 }
 
-void HelloTriangleApplication::run()
+void Application::run()
 {
     initWindow();
     initVulkan();
@@ -30,7 +30,7 @@ void HelloTriangleApplication::run()
     cleanup();
 }
 // init GLFW, create  window
-void HelloTriangleApplication::initWindow()
+void Application::initWindow()
 {
     glfwInit();
     // disable openGL
@@ -41,7 +41,7 @@ void HelloTriangleApplication::initWindow()
     window_m = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
 }
 // init validation layer, instance
-void HelloTriangleApplication::initVulkan()
+void Application::initVulkan()
 {
     createInstance();
     // window surface should be created right after the
@@ -58,17 +58,17 @@ void HelloTriangleApplication::initVulkan()
     upDeviceManager_m->createSwapChain();
     upDeviceManager_m->createImageViews();
     // graphics pipeline
-    upGraphicsPipeline_m->createGraphicsPipeline();
+    //upGraphicsPipeline_m->createGraphicsPipeline();
 }
 
-void HelloTriangleApplication::mainLoop()
+void Application::mainLoop()
 {
     while (!glfwWindowShouldClose(window_m)){
         glfwPollEvents();
     }
 }
 
-void HelloTriangleApplication::cleanup()
+void Application::cleanup()
 {
     // destroy logical device in its destructor
     upDeviceManager_m->deviceCleanup(instance_m);
@@ -81,7 +81,7 @@ void HelloTriangleApplication::cleanup()
     glfwTerminate();
 }
 // fill in a struct with some informattion about the application
-void HelloTriangleApplication::createInstance()
+void Application::createInstance()
 {
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -127,7 +127,7 @@ void HelloTriangleApplication::createInstance()
         throw std::runtime_error("failed to create instance!");
 }
 
-void HelloTriangleApplication::checkingForExtensionSupport()
+void Application::checkingForExtensionSupport()
 {
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
@@ -141,7 +141,7 @@ void HelloTriangleApplication::checkingForExtensionSupport()
     // check wheather all glfwExtensions are supported
 }
 // same as chckingForExtensionSupport()
-bool HelloTriangleApplication::checkValidationLayerSupport() {
+bool Application::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
     std::vector<VkLayerProperties> availableLayers(layerCount);
@@ -169,7 +169,7 @@ bool HelloTriangleApplication::checkValidationLayerSupport() {
     return true;
 }
 // required list of extensions based on wheather validation lyaers are enabled
-std::vector<const char*> HelloTriangleApplication::getRequiredExtensions()
+std::vector<const char*> Application::getRequiredExtensions()
 {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions

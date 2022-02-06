@@ -7,10 +7,10 @@
 #include "VkDeviceManager.hpp"
 #include "VkGraphicsPipeline.hpp"
 
-class HelloTriangleApplication
+class Application
 {
 public:
-    HelloTriangleApplication();
+    Application();
     void  run();
 private:
     // functions
