@@ -5,6 +5,7 @@
 #include <memory>
 #include "VkDebugger.hpp"
 #include "VkDeviceManager.hpp"
+#include "VkGraphicsPipeline.hpp"
 
 class HelloTriangleApplication
 {
@@ -30,4 +31,5 @@ private:
     // original debugger
     std::unique_ptr<VkDebugger> upDebugger_m;
     std::unique_ptr<VkDeviceManager> upDeviceManager_m;
+    std::unique_ptr<VkGraphicsPipeline> upGraphicsPipeline_m;
 };

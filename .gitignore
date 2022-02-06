@@ -5,3 +5,4 @@ Dockerfile-former
 */obj/*
 */HelloTriangleApplication
 Drawing_a_triangle/MakefileForUbuntu
+*.spv
