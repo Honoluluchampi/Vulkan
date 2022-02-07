@@ -1,13 +1,18 @@
-#include "VkDeviceManager.hpp"
+#include <VkDeviceManager.hpp>
 #include <stdexcept>
 #include <iostream>
 #include <set>
 #include <cstdint>
 #include <algorithm>
 
-VkDevice* VkDeviceManager::getDeviceRefference()
+VkDevice VkDeviceManager::getDevice() const
 {
-    return &device_m;
+    return device_m;
+}
+
+VkExtent2D VkDeviceManager::getSwapChainExtent() const
+{
+    return swapChainExtent_m;
 }
 
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)

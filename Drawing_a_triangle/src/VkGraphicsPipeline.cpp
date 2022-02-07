@@ -1,7 +1,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "VkGraphicsPipeline.hpp"
+#include <VkGraphicsPipeline.hpp>
+#include <VkDeviceManager.hpp>
 
 static std::vector<char> readFile(const std::string& filename)
 {
@@ -19,8 +20,10 @@ static std::vector<char> readFile(const std::string& filename)
     return buffer;
 }
 
-void VkGraphicsPipeline::createGraphicsPipeline(const VkDevice& device)
+std::unique_ptr<VkDeviceManager> VkGraphicsPipeline::createGraphicsPipeline
+    (std::unique_ptr<VkDeviceManager> upDeviceManager)
 {
+    const auto device = upDeviceManager->getDevice();
     auto vertShaderCode = readFile("./spv/vert.spv");
     auto fragShaderCode = readFile("./spv/frag.spv");
     vertShaderModule_m = createShaderModule(vertShaderCode, device);
@@ -28,9 +31,13 @@ void VkGraphicsPipeline::createGraphicsPipeline(const VkDevice& device)
     // assign these modules to a specific pipeline stage
     auto shaderStageInfo = createPipelineShaderStageInfo();
     auto vertexInputInfo = createVertexInputInfo();
-    
+    auto inputAssemblyInfo = createInputAssemblyInfo();
+
     vkDestroyShaderModule(device, vertShaderModule_m, nullptr);
     vkDestroyShaderModule(device, fragShaderModule_m, nullptr);
+
+    // return the ownership of the device manager to the app
+    return std::move(upDeviceManager);
 }
 
 VkShaderModule VkGraphicsPipeline::createShaderModule
@@ -67,7 +74,8 @@ VkPipelineShaderStageCreateInfo
     fragShaderStageInfo.pName = "main";
 }
 
-VkPipelineVertexInputStateCreateInfo VkGraphicsPipeline::createVertexInputInfo()
+VkPipelineVertexInputStateCreateInfo 
+    VkGraphicsPipeline::createVertexInputInfo()
 {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = 
@@ -77,4 +85,54 @@ VkPipelineVertexInputStateCreateInfo VkGraphicsPipeline::createVertexInputInfo()
     vertexInputInfo.vertexAttributeDescriptionCount = 0;
     vertexInputInfo.pVertexAttributeDescriptions = nullptr; //optional
     return vertexInputInfo;
+}
+
+// what kind of geometry will be drawn from the vertices (topoloby) and
+// if primitive restart should be enabled
+VkPipelineInputAssemblyStateCreateInfo
+    VkGraphicsPipeline::createInputAssemblyInfo()
+{
+    VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+    inputAssembly.sType = 
+        VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    inputAssembly.primitiveRestartEnable = VK_FALSE;
+    return inputAssembly;
+}
+
+// transformation of the image
+VkViewport VkGraphicsPipeline::createViewport(const VkExtent2D& extent)
+{
+    // draw entire framebuffer
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(extent.width);
+    viewport.height = static_cast<float>(extent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    return viewport;
+}
+
+// cut the region of the framebuffer(swap chain)
+VkRect2D VkGraphicsPipeline::createScissor(const VkExtent2D& extent)
+{
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = extent;
+    return scissor;
+}
+
+VkPipelineViewportStateCreateInfo VkGraphicsPipeline::createViewpoartInfo
+    (const VkViewport& viewport, const VkRect2D& scissor)
+{
+    VkPipelineViewportStateCreateInfo viewportState{};
+    viewportState.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    // by enabling a GPU feature in logical device creation,
+    // its possible to use multiple viewports
+    viewportState.viewportCount = 1;
+    viewportState.pViewports = &viewport;
+    viewportState.scissorCount = 1;
+    viewportState.pScissors = &scissor;
 }

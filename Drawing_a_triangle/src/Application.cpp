@@ -4,7 +4,8 @@
 #include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
 #include <cstring>
 #include <vector>
-#include "Application.hpp"
+#include <Application.hpp>
+#include <memory>
 
 constexpr uint32_t WIDTH = 800;
 constexpr uint32_t HEIGHT = 600;
@@ -58,8 +59,9 @@ void Application::initVulkan()
     upDeviceManager_m->createSwapChain();
     upDeviceManager_m->createImageViews();
     // graphics pipeline
-    upGraphicsPipeline_m->createGraphicsPipeline
-        (*upDeviceManager_m->getDeviceRefference());
+    // rent the ownership of the device manager to the graphics pipeline organaizer
+    upDeviceManager_m = std::move
+        (upGraphicsPipeline_m->createGraphicsPipeline(std::move(upDeviceManager_m)));
 }
 
 void Application::mainLoop()
