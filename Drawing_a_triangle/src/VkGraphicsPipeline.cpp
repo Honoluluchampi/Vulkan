@@ -26,8 +26,9 @@ void VkGraphicsPipeline::createGraphicsPipeline(const VkDevice& device)
     vertShaderModule_m = createShaderModule(vertShaderCode, device);
     fragShaderModule_m = createShaderModule(fragShaderCode, device);
     // assign these modules to a specific pipeline stage
-    createPipelineShaderStage();
-
+    auto shaderStageInfo = createPipelineShaderStageInfo();
+    auto vertexInputInfo = createVertexInputInfo();
+    
     vkDestroyShaderModule(device, vertShaderModule_m, nullptr);
     vkDestroyShaderModule(device, fragShaderModule_m, nullptr);
 }
@@ -46,7 +47,8 @@ VkShaderModule VkGraphicsPipeline::createShaderModule
     return shaderModule;
 }
 
-void VkGraphicsPipeline::createPipelineShaderStage()
+VkPipelineShaderStageCreateInfo 
+    VkGraphicsPipeline::createPipelineShaderStageInfo()
 {
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = 
@@ -63,4 +65,16 @@ void VkGraphicsPipeline::createPipelineShaderStage()
     fragShaderStageInfo.module = fragShaderModule_m;
     // the function to invoke
     fragShaderStageInfo.pName = "main";
+}
+
+VkPipelineVertexInputStateCreateInfo VkGraphicsPipeline::createVertexInputInfo()
+{
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    vertexInputInfo.sType = 
+        VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount = 0;
+    vertexInputInfo.pVertexBindingDescriptions = nullptr; //optional
+    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+    vertexInputInfo.pVertexAttributeDescriptions = nullptr; //optional
+    return vertexInputInfo;
 }
