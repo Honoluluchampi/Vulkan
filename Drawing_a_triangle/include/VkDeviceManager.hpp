@@ -31,6 +31,8 @@ public:
     void deviceCleanup(const VkInstance& instance);
     void createSwapChain();
     void createImageViews();
+    // make sure that you dont change the device_m out of this class
+    VkDevice* getDeviceRefference();
     
 private:
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);

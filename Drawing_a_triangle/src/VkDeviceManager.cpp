@@ -5,6 +5,11 @@
 #include <cstdint>
 #include <algorithm>
 
+VkDevice* VkDeviceManager::getDeviceRefference()
+{
+    return &device_m;
+}
+
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {
     for (auto& imageView : swapChainImageViews_m) {

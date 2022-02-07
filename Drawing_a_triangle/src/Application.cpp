@@ -58,7 +58,8 @@ void Application::initVulkan()
     upDeviceManager_m->createSwapChain();
     upDeviceManager_m->createImageViews();
     // graphics pipeline
-    //upGraphicsPipeline_m->createGraphicsPipeline();
+    upGraphicsPipeline_m->createGraphicsPipeline
+        (*upDeviceManager_m->getDeviceRefference());
 }
 
 void Application::mainLoop()

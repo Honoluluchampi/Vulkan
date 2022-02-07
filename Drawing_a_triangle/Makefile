@@ -7,7 +7,7 @@ LDFLAGS = $(VULKANDIR)/lib/libvulkan.1.2.198.dylib $(VULKANDIR)/lib/libvulkan.1.
 SOURCEDIR = ./src
 SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
 LIBS = 
-INCLUDE = -I/usr/local/include -I$(VULKANDIR)/include
+INCLUDE = -I/usr/local/include -I$(VULKANDIR)/include -I./include
 OBJECTDIR = ./obj
 OBJECTS = $(addprefix $(OBJECTDIR)/, $(notdir $(SOURCES:.cpp=.o)))
 DEPENDS = $(OBJECTS:.o=.d)
