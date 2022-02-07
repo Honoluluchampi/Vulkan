@@ -23,11 +23,13 @@ void VkGraphicsPipeline::createGraphicsPipeline(const VkDevice& device)
 {
     auto vertShaderCode = readFile("./spv/vert.spv");
     auto fragShaderCode = readFile("./spv/frag.spv");
-    auto vertShaderModule = createShaderModule(vertShaderCode, device);
-    auto fragShaderModule = createShaderModule(fragShaderCode, device);
+    vertShaderModule_m = createShaderModule(vertShaderCode, device);
+    fragShaderModule_m = createShaderModule(fragShaderCode, device);
+    // assign these modules to a specific pipeline stage
+    createPipelineShaderStage();
 
-    vkDestroyShaderModule(device, vertShaderModule, nullptr);
-    vkDestroyShaderModule(device, fragShaderModule, nullptr);
+    vkDestroyShaderModule(device, vertShaderModule_m, nullptr);
+    vkDestroyShaderModule(device, fragShaderModule_m, nullptr);
 }
 
 VkShaderModule VkGraphicsPipeline::createShaderModule
@@ -42,4 +44,23 @@ VkShaderModule VkGraphicsPipeline::createShaderModule
     if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
         throw std::runtime_error("failed to create shader module!");
     return shaderModule;
+}
+
+void VkGraphicsPipeline::createPipelineShaderStage()
+{
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+    vertShaderStageInfo.sType = 
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertShaderStageInfo.module = vertShaderModule_m;
+    // the function to invoke
+    vertShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+    fragShaderStageInfo.sType = 
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragShaderStageInfo.module = fragShaderModule_m;
+    // the function to invoke
+    fragShaderStageInfo.pName = "main";
 }
