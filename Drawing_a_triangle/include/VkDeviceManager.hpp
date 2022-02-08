@@ -32,8 +32,8 @@ public:
     void createSwapChain();
     void createImageViews();
     // make sure that you dont change the device_m out of this class
-    VkDevice getDevice() const;
-    VkExtent2D getSwapChainExtent() const;
+    const VkDevice& getDevice() const;
+    const VkExtent2D& getSwapChainExtent() const;
     
 private:
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);

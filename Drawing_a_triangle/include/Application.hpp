@@ -3,9 +3,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <memory>
-#include "VkDebugger.hpp"
-#include "VkDeviceManager.hpp"
-#include "VkGraphicsPipeline.hpp"
+#include <VkDebugger.hpp>
+#include <VkDeviceManager.hpp>
+#include <VkGraphicsPipeline.hpp>
 
 class Application
 {
@@ -23,6 +23,8 @@ private:
     void createInstance();
     // message callback
     std::vector<const char*> getRequiredExtensions();
+    // up's communication
+    const VkDeviceManager& getDeviceManager() const;
     // variables
     GLFWwindow* window_m;
     VkInstance instance_m;

@@ -5,12 +5,12 @@
 #include <cstdint>
 #include <algorithm>
 
-VkDevice VkDeviceManager::getDevice() const
+const VkDevice& VkDeviceManager::getDevice() const
 {
     return device_m;
 }
 
-VkExtent2D VkDeviceManager::getSwapChainExtent() const
+const VkExtent2D& VkDeviceManager::getSwapChainExtent() const
 {
     return swapChainExtent_m;
 }

@@ -59,9 +59,8 @@ void Application::initVulkan()
     upDeviceManager_m->createSwapChain();
     upDeviceManager_m->createImageViews();
     // graphics pipeline
-    // rent the ownership of the device manager to the graphics pipeline organaizer
-    upDeviceManager_m = std::move
-        (upGraphicsPipeline_m->createGraphicsPipeline(std::move(upDeviceManager_m)));
+    upGraphicsPipeline_m.reset(new VkGraphicsPipeline());
+    upGraphicsPipeline_m->createGraphicsPipeline(getDeviceManager());
 }
 
 void Application::mainLoop()
@@ -189,4 +188,9 @@ std::vector<const char*> Application::getRequiredExtensions()
     for(const auto& extensions : extensions)
         std::cout << "\t" << extensions << std::endl;
     return extensions;
+}
+
+const VkDeviceManager& Application::getDeviceManager() const
+{
+    return *upDeviceManager_m;
 }

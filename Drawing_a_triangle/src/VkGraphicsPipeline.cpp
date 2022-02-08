@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <VkGraphicsPipeline.hpp>
-#include <VkDeviceManager.hpp>
 
 static std::vector<char> readFile(const std::string& filename)
 {
@@ -20,24 +19,26 @@ static std::vector<char> readFile(const std::string& filename)
     return buffer;
 }
 
-std::unique_ptr<VkDeviceManager> VkGraphicsPipeline::createGraphicsPipeline
-    (std::unique_ptr<VkDeviceManager> upDeviceManager)
+void VkGraphicsPipeline::createGraphicsPipeline
+    (const VkDeviceManager& deviceManager)
 {
-    const auto device = upDeviceManager->getDevice();
+    const auto& device  = deviceManager.getDevice();
     auto vertShaderCode = readFile("./spv/vert.spv");
     auto fragShaderCode = readFile("./spv/frag.spv");
-    vertShaderModule_m = createShaderModule(vertShaderCode, device);
-    fragShaderModule_m = createShaderModule(fragShaderCode, device);
+    vertShaderModule_m  = createShaderModule(vertShaderCode, device);
+    fragShaderModule_m  = createShaderModule(fragShaderCode, device);
     // assign these modules to a specific pipeline stage
-    auto shaderStageInfo = createPipelineShaderStageInfo();
-    auto vertexInputInfo = createVertexInputInfo();
-    auto inputAssemblyInfo = createInputAssemblyInfo();
+    auto vertShaderStageInfo    = createVertexShaderStageInfo();
+    auto fragShaderStageInfo    = createFragmentShaderStageInfo();
+    auto vertexInputInfo    = createVertexInputInfo();
+    auto inputAssemblyInfo  = createInputAssemblyInfo();
+    // viewport
+    auto viewport   = createViewport(deviceManager.getSwapChainExtent());
+    auto scissor    = createScissor(deviceManager.getSwapChainExtent());
+    auto viewportInfo = createViewportInfo(viewport, scissor);
 
     vkDestroyShaderModule(device, vertShaderModule_m, nullptr);
     vkDestroyShaderModule(device, fragShaderModule_m, nullptr);
-
-    // return the ownership of the device manager to the app
-    return std::move(upDeviceManager);
 }
 
 VkShaderModule VkGraphicsPipeline::createShaderModule
@@ -55,7 +56,7 @@ VkShaderModule VkGraphicsPipeline::createShaderModule
 }
 
 VkPipelineShaderStageCreateInfo 
-    VkGraphicsPipeline::createPipelineShaderStageInfo()
+    VkGraphicsPipeline::createVertexShaderStageInfo()
 {
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = 
@@ -64,7 +65,12 @@ VkPipelineShaderStageCreateInfo
     vertShaderStageInfo.module = vertShaderModule_m;
     // the function to invoke
     vertShaderStageInfo.pName = "main";
+    return vertShaderStageInfo;
+}
 
+VkPipelineShaderStageCreateInfo
+    VkGraphicsPipeline::createFragmentShaderStageInfo()
+{
     VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
     fragShaderStageInfo.sType = 
         VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -72,6 +78,7 @@ VkPipelineShaderStageCreateInfo
     fragShaderStageInfo.module = fragShaderModule_m;
     // the function to invoke
     fragShaderStageInfo.pName = "main";
+    return fragShaderStageInfo;
 }
 
 VkPipelineVertexInputStateCreateInfo 
@@ -123,7 +130,7 @@ VkRect2D VkGraphicsPipeline::createScissor(const VkExtent2D& extent)
     return scissor;
 }
 
-VkPipelineViewportStateCreateInfo VkGraphicsPipeline::createViewpoartInfo
+VkPipelineViewportStateCreateInfo VkGraphicsPipeline::createViewportInfo
     (const VkViewport& viewport, const VkRect2D& scissor)
 {
     VkPipelineViewportStateCreateInfo viewportState{};
@@ -135,4 +142,5 @@ VkPipelineViewportStateCreateInfo VkGraphicsPipeline::createViewpoartInfo
     viewportState.pViewports = &viewport;
     viewportState.scissorCount = 1;
     viewportState.pScissors = &scissor;
+    return viewportState;
 }
