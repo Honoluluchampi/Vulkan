@@ -15,6 +15,11 @@ const VkExtent2D& VkDeviceManager::getSwapChainExtent() const
     return swapChainExtent_m;
 }
 
+const VkFormat& VkDeviceManager::getSwapChainImageFormat() const 
+{
+    return swapChainImageFormat_m;
+}
+
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {
     for (auto& imageView : swapChainImageViews_m) {

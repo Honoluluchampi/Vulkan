@@ -34,6 +34,7 @@ public:
     // make sure that you dont change the device_m out of this class
     const VkDevice& getDevice() const;
     const VkExtent2D& getSwapChainExtent() const;
+    const VkFormat& getSwapChainImageFormat() const;
     
 private:
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);

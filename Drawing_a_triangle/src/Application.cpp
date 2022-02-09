@@ -58,6 +58,9 @@ void Application::initVulkan()
     upDeviceManager_m->createLogicalDevice(enableValidationLayers_m, validationLayers_m);
     upDeviceManager_m->createSwapChain();
     upDeviceManager_m->createImageViews();
+    // render pass
+    upRenderPass_m.reset(new VkRenderPass());
+    upRenderPass_m->createRenderPass();
     // graphics pipeline
     upGraphicsPipeline_m.reset(new VkGraphicsPipeline());
     upGraphicsPipeline_m->createGraphicsPipeline(getDeviceManager());

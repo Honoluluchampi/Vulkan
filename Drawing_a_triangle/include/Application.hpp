@@ -6,9 +6,12 @@
 #include <VkDebugger.hpp>
 #include <VkDeviceManager.hpp>
 #include <VkGraphicsPipeline.hpp>
+#include <VkRenderPass.hpp>
 
 class Application
 {
+    template <class T>
+    using uptr_t = std::unique_ptr<T>;
 public:
     Application();
     void  run();
@@ -31,7 +34,8 @@ private:
     std::vector<const char*> validationLayers_m;
     bool enableValidationLayers_m;
     // original debugger
-    std::unique_ptr<VkDebugger> upDebugger_m;
-    std::unique_ptr<VkDeviceManager> upDeviceManager_m;
-    std::unique_ptr<VkGraphicsPipeline> upGraphicsPipeline_m;
+    uptr_t<VkDebugger> upDebugger_m;
+    uptr_t<VkDeviceManager> upDeviceManager_m;
+    uptr_t<VkGraphicsPipeline> upGraphicsPipeline_m;
+    uptr_t<VkRenderPass> upRenderPass_m;
 };
