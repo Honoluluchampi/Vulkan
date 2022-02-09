@@ -1,50 +1,46 @@
 #include <VkRenderPass.hpp>
 #include <iostream>
 
-VkAttachmentDescription VkRenderPassFactory::createAttachmentDescription
+void VkRenderPassFactory::createAttachmentDescription
     (const VkDeviceManager& deviceManager)
 {
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = deviceManager.getSwapChainImageFormat();
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachment_m.format = deviceManager.getSwapChainImageFormat();
+    colorAttachment_m.samples = VK_SAMPLE_COUNT_1_BIT;
     // what to do with the data in the attachment before and after rendering
     // clear the framebuffer to black before drawing a new frame
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    return colorAttachment;
+    colorAttachment_m.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment_m.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment_m.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment_m.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment_m.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment_m.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 }
 
-VkSubpassDescription VkRenderPassFactory::createSubPass()
+void VkRenderPassFactory::createSubPass()
 {
-    VkAttachmentReference colorAttachmentRef{};
     // which attachment to reference by its index
-    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef_m.attachment = 0;
     // which layout we would like the attachment to have during a subpass
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachmentRef_m.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     // subpass creation
-    VkSubpassDescription subpass{};
     // vulkan may support compute subpasses in the future
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
+    subpass_m.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_m.colorAttachmentCount = 1;
+    subpass_m.pColorAttachments = &colorAttachmentRef_m;
 }
 
-void VkRenderPassFactory::createRenderPass(const VkDeviceManager& deviceManager)
+void VkRenderPassFactory::createRenderPass(const VkDeviceManager& deviceManager, VkRenderPass* pRenderPass)
 {
-    VkAttachmentDescription attachment = createAttachmentDescription(deviceManager);
-    VkSubpassDescription subpass = createSubPass();
+    createAttachmentDescription(deviceManager);
+    createSubPass();
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     // attachment and subpass can be array of those;
     renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &attachment;
+    renderPassInfo.pAttachments = &colorAttachment_m;
     renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
+    renderPassInfo.pSubpasses = &subpass_m;
     if (vkCreateRenderPass(deviceManager.getDevice(), 
-        &renderPassInfo, nullptr, &renderPass_m) != VK_SUCCESS)
+        &renderPassInfo, nullptr, pRenderPass) != VK_SUCCESS)
             throw std::runtime_error("failed to create render pass!");
 }

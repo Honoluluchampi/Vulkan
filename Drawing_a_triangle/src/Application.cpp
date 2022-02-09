@@ -58,12 +58,9 @@ void Application::initVulkan()
     upDeviceManager_m->createLogicalDevice(enableValidationLayers_m, validationLayers_m);
     upDeviceManager_m->createSwapChain();
     upDeviceManager_m->createImageViews();
-    // render pass
-    upRenderPass_m.reset(new VkRenderPass());
-    upRenderPass_m->createRenderPass();
     // graphics pipeline
-    upGraphicsPipeline_m.reset(new VkGraphicsPipeline());
-    upGraphicsPipeline_m->createGraphicsPipeline(getDeviceManager());
+    upGraphicsPipeline_m.reset(new VkGraphicsPipelineFactory(getDeviceManager()));
+    upGraphicsPipeline_m->createGraphicsPipeline();
 }
 
 void Application::mainLoop()
@@ -75,6 +72,7 @@ void Application::mainLoop()
 
 void Application::cleanup()
 {
+    upGraphicsPipeline_m->destroyGraphicsPipeline();
     // destroy logical device in its destructor
     upDeviceManager_m->deviceCleanup(instance_m);
     upDeviceManager_m.reset();

@@ -36,6 +36,6 @@ private:
     // original debugger
     uptr_t<VkDebugger> upDebugger_m;
     uptr_t<VkDeviceManager> upDeviceManager_m;
-    uptr_t<VkGraphicsPipeline> upGraphicsPipeline_m;
+    uptr_t<VkGraphicsPipelineFactory> upGraphicsPipeline_m;
     uptr_t<VkRenderPass> upRenderPass_m;
 };

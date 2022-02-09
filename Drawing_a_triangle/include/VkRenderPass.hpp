@@ -1,3 +1,4 @@
+#pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <VkDeviceManager.hpp>
@@ -8,11 +9,12 @@
 class VkRenderPassFactory
 {
 public:
-    void createRenderPass(const VkDeviceManager& deviceManager);
+    void createRenderPass(const VkDeviceManager& deviceManager, VkRenderPass* pRenderPass);
 private:
-    VkAttachmentDescription createAttachmentDescription(const VkDeviceManager& deviceManager);
-    VkSubpassDescription createSubPass();
-    
-    VkRenderPass renderPass_m;
-    VkPipelineLayout pipelineLayout_m;
+    void createAttachmentDescription(const VkDeviceManager& deviceManager);
+    void createSubPass();
+
+    VkAttachmentDescription colorAttachment_m{};
+    VkAttachmentReference colorAttachmentRef_m{};
+    VkSubpassDescription subpass_m{};
 };
