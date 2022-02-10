@@ -5,6 +5,11 @@
 #include <VkGraphicsPipeline.hpp>
 #include <VkRenderPass.hpp>
 
+const VkRenderPass& VkGraphicsPipelineFactory::getRenderPass()
+{
+    return renderPass_m;
+}
+
 VkGraphicsPipelineFactory::VkGraphicsPipelineFactory(const VkDeviceManager& deviceManager)
     :deviceManager_m(deviceManager){}
 
@@ -67,8 +72,7 @@ void VkGraphicsPipelineFactory::createGraphicsPipeline()
     createPipelineLayout();
     pipelineInfo.layout = pipelineLayout_m;
     // render pass
-    VkRenderPassFactory renderPassFactory;
-    renderPassFactory.createRenderPass(deviceManager_m, &renderPass_m);
+    renderPassFactory_m.createRenderPass(deviceManager_m, &renderPass_m);
     // pass by copy?
     pipelineInfo.renderPass = renderPass_m;
     pipelineInfo.subpass = 0;

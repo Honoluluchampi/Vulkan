@@ -14,6 +14,3 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxi-dev libxxf86vm-dev libxrandr-dev
 
 ENV DISPLAY host.docker.internal:0
-
-# wget //vulkansdk
-# tar -xzf vulkansdk-linux-x86_64-xxx.tar.gz

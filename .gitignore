@@ -1,7 +1,6 @@
 Vulkan Tutorial en.pdf
 /.vscode/*
 Dockerfile-former
-/VulkanTest/*
 */obj/*
 */HelloTriangleApplication
 Drawing_a_triangle/MakefileForUbuntu

@@ -61,6 +61,10 @@ void Application::initVulkan()
     // graphics pipeline
     upGraphicsPipeline_m.reset(new VkGraphicsPipelineFactory(getDeviceManager()));
     upGraphicsPipeline_m->createGraphicsPipeline();
+    // framebuffer
+    upFramebufferFactory_m.reset(new VkFramebufferFactory());
+    upFramebufferFactory_m->createFramebuffers
+        (getDeviceManager(), upGraphicsPipeline_m->getRenderPass());
 }
 
 void Application::mainLoop()
@@ -72,6 +76,7 @@ void Application::mainLoop()
 
 void Application::cleanup()
 {
+    upFramebufferFactory_m->destroyFramebuffers(getDeviceManager());
     upGraphicsPipeline_m->destroyGraphicsPipeline();
     // destroy logical device in its destructor
     upDeviceManager_m->deviceCleanup(instance_m);

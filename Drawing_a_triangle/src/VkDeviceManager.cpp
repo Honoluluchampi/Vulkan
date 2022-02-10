@@ -20,6 +20,11 @@ const VkFormat& VkDeviceManager::getSwapChainImageFormat() const
     return swapChainImageFormat_m;
 }
 
+const std::vector<VkImageView>& VkDeviceManager::getSwapChainImageViews() const
+{
+    return swapChainImageViews_m;
+}
+
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {
     for (auto& imageView : swapChainImageViews_m) {

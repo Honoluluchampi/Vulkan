@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <VkDeviceManager.hpp>
+#include <VkRenderPass.hpp>
 
 class VkGraphicsPipelineFactory
 {
@@ -10,6 +11,7 @@ public:
     VkGraphicsPipelineFactory(const VkDeviceManager& deviceManager);
     void createGraphicsPipeline();
     void destroyGraphicsPipeline();
+    const VkRenderPass& getRenderPass();
 private:
     // wrap the shader code in a VkShaderModule object
     VkShaderModule createShaderModule
@@ -41,6 +43,8 @@ private:
     VkShaderModule vertShaderModule_m;
     VkShaderModule fragShaderModule_m;
     VkPipelineLayout pipelineLayout_m;
+    // to save the attachments and subpasses refrence
+    VkRenderPassFactory renderPassFactory_m;
     VkRenderPass renderPass_m;
     VkPipeline graphicsPipeline_m;
 };

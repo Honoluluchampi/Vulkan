@@ -7,6 +7,7 @@
 #include <VkDeviceManager.hpp>
 #include <VkGraphicsPipeline.hpp>
 #include <VkRenderPass.hpp>
+#include <VkFramebufferFactory.hpp>
 
 class Application
 {
@@ -38,4 +39,5 @@ private:
     uptr_t<VkDeviceManager> upDeviceManager_m;
     uptr_t<VkGraphicsPipelineFactory> upGraphicsPipeline_m;
     uptr_t<VkRenderPass> upRenderPass_m;
+    uptr_t<VkFramebufferFactory> upFramebufferFactory_m;
 };
