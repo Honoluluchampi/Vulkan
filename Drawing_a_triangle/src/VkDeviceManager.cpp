@@ -25,6 +25,11 @@ const std::vector<VkImageView>& VkDeviceManager::getSwapChainImageViews() const
     return swapChainImageViews_m;
 }
 
+const VkPhysicalDevice& VkDeviceManager::getPhysicalDevice() const
+{
+    return physicalDevice_m;
+}
+
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {
     for (auto& imageView : swapChainImageViews_m) {
@@ -98,7 +103,8 @@ bool VkDeviceManager::checkDeviceExtensionSupport(const VkPhysicalDevice& device
     return requiredExtensions.empty();
 }
 
-VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies(const VkPhysicalDevice& device)
+VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies
+    (const VkPhysicalDevice& device)
 {
     VkDeviceManager::QueueFamilyIndices indices;
     // retrieve the list of quque families 

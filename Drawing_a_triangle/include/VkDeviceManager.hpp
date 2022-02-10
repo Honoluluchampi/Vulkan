@@ -36,9 +36,10 @@ public:
     const VkExtent2D& getSwapChainExtent() const;
     const VkFormat& getSwapChainImageFormat() const;
     const std::vector<VkImageView>& getSwapChainImageViews() const;
+    const VkPhysicalDevice& getPhysicalDevice() const;
+    QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);
     
 private:
-    QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);
     bool isDeviceSuitable(const VkPhysicalDevice& device);
     // check for swap chain extension
     bool checkDeviceExtensionSupport(const VkPhysicalDevice& device);

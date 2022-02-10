@@ -65,6 +65,10 @@ void Application::initVulkan()
     upFramebufferFactory_m.reset(new VkFramebufferFactory());
     upFramebufferFactory_m->createFramebuffers
         (getDeviceManager(), upGraphicsPipeline_m->getRenderPass());
+    // command buffer
+    upCommandManager_m.reset(new VkCommandManager());
+    upCommandManager_m->createCommandPool(getDeviceManager());
+    upCommandManager_m->createCommandBuffers();
 }
 
 void Application::mainLoop()
@@ -76,6 +80,7 @@ void Application::mainLoop()
 
 void Application::cleanup()
 {
+    upCommandManager_m->destroyCommandPoolandBuffers(getDeviceManager().getDevice());
     upFramebufferFactory_m->destroyFramebuffers(getDeviceManager());
     upGraphicsPipeline_m->destroyGraphicsPipeline();
     // destroy logical device in its destructor
