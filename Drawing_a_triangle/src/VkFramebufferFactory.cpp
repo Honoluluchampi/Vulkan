@@ -1,6 +1,11 @@
 #include <VkFramebufferFactory.hpp>
 #include <iostream>
 
+std::vector<VkFramebuffer>& VkFramebufferFactory::getSwapChainFrameBuffersRef()
+{
+    return swapChainFramebuffers_m;
+}
+
 void VkFramebufferFactory::createFramebuffers
     (const VkDeviceManager& deviceManager, const VkRenderPass& renderPass)
 {

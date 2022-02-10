@@ -59,16 +59,20 @@ void Application::initVulkan()
     upDeviceManager_m->createSwapChain();
     upDeviceManager_m->createImageViews();
     // graphics pipeline
-    upGraphicsPipeline_m.reset(new VkGraphicsPipelineFactory(getDeviceManager()));
+    upGraphicsPipeline_m.reset(new VkGraphicsPipelineFactory(getDeviceManagerRef()));
     upGraphicsPipeline_m->createGraphicsPipeline();
     // framebuffer
     upFramebufferFactory_m.reset(new VkFramebufferFactory());
     upFramebufferFactory_m->createFramebuffers
-        (getDeviceManager(), upGraphicsPipeline_m->getRenderPass());
+        (getDeviceManagerRef(), upGraphicsPipeline_m->getRenderPassRef());
     // command buffer
     upCommandManager_m.reset(new VkCommandManager());
-    upCommandManager_m->createCommandPool(getDeviceManager());
-    upCommandManager_m->createCommandBuffers();
+    upCommandManager_m->createCommandPool(getDeviceManagerRef());
+    upCommandManager_m->createCommandBuffers(getDeviceManagerRef(), 
+        upGraphicsPipeline_m->getRenderPassRef(), 
+        upFramebufferFactory_m->getSwapChainFrameBuffersRef(), 
+        upGraphicsPipeline_m->getGraphicsPipelineRef()
+    );
 }
 
 void Application::mainLoop()
@@ -80,12 +84,13 @@ void Application::mainLoop()
 
 void Application::cleanup()
 {
-    upCommandManager_m->destroyCommandPoolandBuffers(getDeviceManager().getDevice());
-    upFramebufferFactory_m->destroyFramebuffers(getDeviceManager());
+    upCommandManager_m->destroyCommandPoolandBuffers(getDeviceManagerRef().getDevice());
+    // to prevent VkCommandManager.commandBuffers_m from double deleted
+    upCommandManager_m.reset();
+    upFramebufferFactory_m->destroyFramebuffers(getDeviceManagerRef());
     upGraphicsPipeline_m->destroyGraphicsPipeline();
     // destroy logical device in its destructor
     upDeviceManager_m->deviceCleanup(instance_m);
-    upDeviceManager_m.reset();
     if (enableValidationLayers_m)
         upDebugger_m->destroyDebugUtilsMessengerEXT(instance_m, nullptr);
     vkDestroyInstance(instance_m, nullptr);
@@ -201,7 +206,7 @@ std::vector<const char*> Application::getRequiredExtensions()
     return extensions;
 }
 
-const VkDeviceManager& Application::getDeviceManager() const
+const VkDeviceManager& Application::getDeviceManagerRef() const
 {
     return *upDeviceManager_m;
 }

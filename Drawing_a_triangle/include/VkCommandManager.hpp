@@ -6,12 +6,16 @@
 class VkCommandManager
 {
 public:
+    VkCommandManager(){}
     // Command pools manage the memory that is used to store the buffers 
     // and com- mand buffers are allocated from them.
     void createCommandPool(const VkDeviceManager& deviceManager);
-    void createCommandBuffers();
+    void createCommandBuffers(const VkDeviceManager& deviceManager, const VkRenderPass& renderPass, 
+        const std::vector<VkFramebuffer>& swapChainFramebuffers, const VkPipeline& graphicsPipeline);
     void destroyCommandPoolandBuffers(const VkDevice& device);
 private:
+    void executeCommandFunctions(const VkRenderPass& renderPass, const VkExtent2D& swapChainExtent, 
+        const std::vector<VkFramebuffer>& swapChainFramebuffers, const VkPipeline& graphicsPipeline);
     VkCommandPool commandPool_m;
-    std::vector<VkCommandBuffer> commandBuffers;
+    std::vector<VkCommandBuffer> commandBuffers_m;
 };

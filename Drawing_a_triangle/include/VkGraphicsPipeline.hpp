@@ -11,7 +11,8 @@ public:
     VkGraphicsPipelineFactory(const VkDeviceManager& deviceManager);
     void createGraphicsPipeline();
     void destroyGraphicsPipeline();
-    const VkRenderPass& getRenderPass();
+    const VkRenderPass& getRenderPassRef();
+    const VkPipeline& getGraphicsPipelineRef();
 private:
     // wrap the shader code in a VkShaderModule object
     VkShaderModule createShaderModule

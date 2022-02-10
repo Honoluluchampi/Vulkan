@@ -5,9 +5,14 @@
 #include <VkGraphicsPipeline.hpp>
 #include <VkRenderPass.hpp>
 
-const VkRenderPass& VkGraphicsPipelineFactory::getRenderPass()
+const VkRenderPass& VkGraphicsPipelineFactory::getRenderPassRef()
 {
     return renderPass_m;
+}
+
+const VkPipeline& VkGraphicsPipelineFactory::getGraphicsPipelineRef()
+{
+    return graphicsPipeline_m;
 }
 
 VkGraphicsPipelineFactory::VkGraphicsPipelineFactory(const VkDeviceManager& deviceManager)

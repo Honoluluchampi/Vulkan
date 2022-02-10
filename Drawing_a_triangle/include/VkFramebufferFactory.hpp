@@ -11,6 +11,7 @@ public:
     void createFramebuffers
         (const VkDeviceManager& deviceManager, const VkRenderPass& renderPass);
     void destroyFramebuffers(const VkDeviceManager& deviceManager);
+    std::vector<VkFramebuffer>& getSwapChainFrameBuffersRef();
 private:
     std::vector<VkFramebuffer> swapChainFramebuffers_m;
 };

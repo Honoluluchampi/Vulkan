@@ -29,7 +29,7 @@ private:
     // message callback
     std::vector<const char*> getRequiredExtensions();
     // up's communication
-    const VkDeviceManager& getDeviceManager() const;
+    const VkDeviceManager& getDeviceManagerRef() const;
     // variables
     GLFWwindow* window_m;
     VkInstance instance_m;
@@ -39,7 +39,6 @@ private:
     uptr_t<VkDebugger> upDebugger_m;
     uptr_t<VkDeviceManager> upDeviceManager_m;
     uptr_t<VkGraphicsPipelineFactory> upGraphicsPipeline_m;
-    uptr_t<VkRenderPass> upRenderPass_m;
     uptr_t<VkFramebufferFactory> upFramebufferFactory_m;
     uptr_t<VkCommandManager> upCommandManager_m;
 };
