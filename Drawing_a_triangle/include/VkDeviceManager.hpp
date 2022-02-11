@@ -40,6 +40,7 @@ public:
     const VkSwapchainKHR& getSwapChainRef() const;
     const VkQueue& getGraphicsQueueRef() const;
     const VkQueue& getPresentQueueRef() const;
+    const size_t getSwapChainImagesNum() const;
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);
     
 private:

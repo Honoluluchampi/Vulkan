@@ -1,3 +1,4 @@
+#pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <VkDeviceManager.hpp>
@@ -5,12 +6,18 @@
 class VkRenderer
 {
 public:
-    void createSemaphores(const VkDevice& device);
+    void createSyncObjects(const VkDeviceManager& deviceManager);
     void destroyRenderer(const VkDevice& device);
     void drawFrame(const VkDeviceManager& deviceManager, const std::vector<VkCommandBuffer>& commandBuffer);
 private:
     // an image has been acquired and is ready for rendering
-    VkSemaphore imageAvailableSemaphore_m;
+    std::vector<VkSemaphore> imageAvailableSemaphores_m;
     // rendering has finished and presentation can happen
-    VkSemaphore renderFinishedSemaphore_m;
+    std::vector<VkSemaphore> renderFinishedSemaphores_m;
+    // to use the right pair of semaphores every time
+    size_t currentFrame_m = 0;
+    // for CPU-GPU synchronization
+    std::vector<VkFence> inFlightFences_m;
+    // wait on before a new frame can use that image
+    std::vector<VkFence> imagesInFlight_m;
 };

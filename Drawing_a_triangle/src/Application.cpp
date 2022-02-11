@@ -74,7 +74,7 @@ void Application::initVulkan()
         upGraphicsPipeline_m->getGraphicsPipelineRef()
     );
     upRenderer_m.reset(new VkRenderer());
-    upRenderer_m->createSemaphores(getDeviceManagerRef().getDevice());
+    upRenderer_m->createSyncObjects(getDeviceManagerRef());
 }
 
 void Application::mainLoop()
@@ -83,6 +83,9 @@ void Application::mainLoop()
         glfwPollEvents();
         upRenderer_m->drawFrame(getDeviceManagerRef(), upCommandManager_m->getCommandBufferRef());
     }
+    // wait for the logical device to finish operations 
+    // before exiting mainLoop and destroying the windwo
+    vkDeviceWaitIdle(upDeviceManager_m->getDevice());
 }
 
 void Application::cleanup()

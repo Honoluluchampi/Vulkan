@@ -29,6 +29,9 @@ const VkQueue& VkDeviceManager::getGraphicsQueueRef() const
 const VkQueue& VkDeviceManager::getPresentQueueRef() const
     {return presentQueue_m;}
 
+const size_t VkDeviceManager::getSwapChainImagesNum() const
+    {return swapChainImages_m.size();}
+
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {
     for (auto& imageView : swapChainImageViews_m) {

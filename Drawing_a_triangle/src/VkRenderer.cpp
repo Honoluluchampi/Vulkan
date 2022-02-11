@@ -1,20 +1,43 @@
 #include <VkRenderer.hpp>
 #include <iostream>
 
-void VkRenderer::createSemaphores(const VkDevice& device)
+// how many frames should be processed concurrently
+constexpr size_t MAX_FRAMES_IN_FIGHT = 2;
+
+void VkRenderer::createSyncObjects(const VkDeviceManager& deviceManager)
 {
+    const auto& device = deviceManager.getDevice();
+    auto imagesNum = deviceManager.getSwapChainImagesNum();
+
+    imageAvailableSemaphores_m.resize(MAX_FRAMES_IN_FIGHT);
+    renderFinishedSemaphores_m.resize(MAX_FRAMES_IN_FIGHT);
+    inFlightFences_m.resize(MAX_FRAMES_IN_FIGHT);
+    // initially not a single framce is using an image, so initialize it to no fence
+    imagesInFlight_m.resize(imagesNum, VK_NULL_HANDLE);
+
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    // future version of the vulkan api may add functionality for other parameters
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore_m) != VK_SUCCESS ||
-        vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore_m) != VK_SUCCESS)
-        throw std::runtime_error("failed to create semaphores!");
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    // initialize fences in the signaled state as if they had been rendered an initial frame
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+ 
+    for (size_t i = 0; i < MAX_FRAMES_IN_FIGHT; i++) {
+        // future version of the vulkan api may add functionality for other parameters
+        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores_m[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores_m[i]) != VK_SUCCESS ||
+            vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences_m[i]) != VK_SUCCESS)
+            throw std::runtime_error("failed to create semaphores!");
+    }
 }
 
 void VkRenderer::destroyRenderer(const VkDevice& device)
 {
-    vkDestroySemaphore(device, renderFinishedSemaphore_m, nullptr);
-    vkDestroySemaphore(device, imageAvailableSemaphore_m, nullptr);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FIGHT; i++) {
+        vkDestroySemaphore(device, renderFinishedSemaphores_m[i], nullptr);
+        vkDestroySemaphore(device, imageAvailableSemaphores_m[i], nullptr);
+        vkDestroyFence(device, inFlightFences_m[i], nullptr);
+    }
 }
 
 void VkRenderer::drawFrame(const VkDeviceManager& deviceManager,
@@ -27,16 +50,25 @@ void VkRenderer::drawFrame(const VkDeviceManager& deviceManager,
     const auto& swapChain = deviceManager.getSwapChainRef();
     // specify a timeout in nanoseconds for an image
     auto timeout = UINT64_MAX;
+
+    // wait for the frame to be finished
+    vkWaitForFences(device, 1, &inFlightFences_m[currentFrame_m], VK_TRUE, timeout);
+
     // after acquiring image, the imageSemaphore is signaled
     vkAcquireNextImageKHR(device, swapChain, timeout,
-        imageAvailableSemaphore_m, VK_NULL_HANDLE, &imageIndex);
+        imageAvailableSemaphores_m[currentFrame_m], VK_NULL_HANDLE, &imageIndex);
+    // check if a previous frame is using this image
+    if(imagesInFlight_m[imageIndex] != VK_NULL_HANDLE)
+        vkWaitForFences(device, 1, &imagesInFlight_m[imageIndex], VK_TRUE, timeout);
+    // mark the image as now being in use by this frame
+    imagesInFlight_m[imageIndex] = inFlightFences_m[currentFrame_m];
 
     //submitting the command buffer
     const auto& graphicsQueue = deviceManager.getGraphicsQueueRef();
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     // the index of waitSemaphores corresponds to the index of waitStages
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphore_m};
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores_m[currentFrame_m]};
     // which stage of the pipeline to wait
     VkPipelineStageFlags waitStages[] = 
         {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -49,11 +81,15 @@ void VkRenderer::drawFrame(const VkDeviceManager& deviceManager,
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
     // specify which semaphores to signal once the comand buffer have finished execution
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphore_m};
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores_m[currentFrame_m]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
-    // submit the command buffer to the graphics queue
-    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+
+    // need to be manually restore the fence to the unsignaled state
+    vkResetFences(device, 1, &inFlightFences_m[currentFrame_m]);
+
+    // submit the command buffer to the graphics queue with fence
+    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences_m[currentFrame_m]) != VK_SUCCESS)
         throw std::runtime_error("failed to submit draw command buffer!");
 
     // configure subpass dependencies in VkRenderPassFacotry::createRenderPass
@@ -72,4 +108,6 @@ void VkRenderer::drawFrame(const VkDeviceManager& deviceManager,
     presentInfo.pResults = nullptr; // optional
     const auto& presentQueue = deviceManager.getPresentQueueRef();
     vkQueuePresentKHR(presentQueue, &presentInfo);
+
+    currentFrame_m = (currentFrame_m + 1) % MAX_FRAMES_IN_FIGHT;
 }
