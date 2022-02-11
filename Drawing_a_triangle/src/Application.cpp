@@ -73,6 +73,8 @@ void Application::initVulkan()
         upFramebufferFactory_m->getSwapChainFrameBuffersRef(), 
         upGraphicsPipeline_m->getGraphicsPipelineRef()
     );
+    upRenderer_m.reset(new VkRenderer());
+    upRenderer_m->createSemaphores(getDeviceManagerRef().getDevice());
 }
 
 void Application::mainLoop()
@@ -84,6 +86,7 @@ void Application::mainLoop()
 
 void Application::cleanup()
 {
+    upRenderer_m->destroyRenderer(getDeviceManagerRef().getDevice());
     upCommandManager_m->destroyCommandPoolandBuffers(getDeviceManagerRef().getDevice());
     // to prevent VkCommandManager.commandBuffers_m from double deleted
     upCommandManager_m.reset();

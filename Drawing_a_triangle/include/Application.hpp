@@ -9,6 +9,7 @@
 #include <VkRenderPass.hpp>
 #include <VkFramebufferFactory.hpp>
 #include <VkCommandManager.hpp>
+#include <VkRenderer.hpp>
 
 class Application
 {
@@ -41,4 +42,5 @@ private:
     uptr_t<VkGraphicsPipelineFactory> upGraphicsPipeline_m;
     uptr_t<VkFramebufferFactory> upFramebufferFactory_m;
     uptr_t<VkCommandManager> upCommandManager_m;
+    uptr_t<VkRenderer> upRenderer_m;
 };
