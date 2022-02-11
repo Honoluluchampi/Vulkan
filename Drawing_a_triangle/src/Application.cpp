@@ -81,6 +81,7 @@ void Application::mainLoop()
 {
     while (!glfwWindowShouldClose(window_m)){
         glfwPollEvents();
+        upRenderer_m->drawFrame(getDeviceManagerRef(), upCommandManager_m->getCommandBufferRef());
     }
 }
 

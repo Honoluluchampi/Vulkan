@@ -1,6 +1,8 @@
 #include <VkCommandManager.hpp>
 #include <iostream>
 
+const std::vector<VkCommandBuffer>& VkCommandManager::getCommandBufferRef() const
+    {return commandBuffers_m;}
 // Command pools manage the memory that is used to store the buffers 
 // and com- mand buffers are allocated from them.
 void VkCommandManager::createCommandPool(const VkDeviceManager& deviceManager)

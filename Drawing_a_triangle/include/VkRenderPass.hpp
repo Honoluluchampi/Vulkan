@@ -13,6 +13,7 @@ public:
 private:
     void createAttachmentDescription(const VkDeviceManager& deviceManager);
     void createSubPass();
+    VkSubpassDependency createSubpassDependency();
 
     VkAttachmentDescription colorAttachment_m{};
     VkAttachmentReference colorAttachmentRef_m{};

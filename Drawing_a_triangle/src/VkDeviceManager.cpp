@@ -6,29 +6,28 @@
 #include <algorithm>
 
 const VkDevice& VkDeviceManager::getDevice() const
-{
-    return device_m;
-}
+    {return device_m;}
 
 const VkExtent2D& VkDeviceManager::getSwapChainExtent() const
-{
-    return swapChainExtent_m;
-}
+    {return swapChainExtent_m;}
 
 const VkFormat& VkDeviceManager::getSwapChainImageFormat() const 
-{
-    return swapChainImageFormat_m;
-}
+    {return swapChainImageFormat_m;}
 
 const std::vector<VkImageView>& VkDeviceManager::getSwapChainImageViews() const
-{
-    return swapChainImageViews_m;
-}
+    {return swapChainImageViews_m;}
 
 const VkPhysicalDevice& VkDeviceManager::getPhysicalDevice() const
-{
-    return physicalDevice_m;
-}
+    {return physicalDevice_m;}
+
+const VkSwapchainKHR& VkDeviceManager::getSwapChainRef() const
+    {return swapChain_m;}
+
+const VkQueue& VkDeviceManager::getGraphicsQueueRef() const 
+    {return graphicsQueue_m;}
+
+const VkQueue& VkDeviceManager::getPresentQueueRef() const
+    {return presentQueue_m;}
 
 void VkDeviceManager::deviceCleanup(const VkInstance& instance)
 {

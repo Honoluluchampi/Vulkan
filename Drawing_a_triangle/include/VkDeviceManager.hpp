@@ -37,6 +37,9 @@ public:
     const VkFormat& getSwapChainImageFormat() const;
     const std::vector<VkImageView>& getSwapChainImageViews() const;
     const VkPhysicalDevice& getPhysicalDevice() const;
+    const VkSwapchainKHR& getSwapChainRef() const;
+    const VkQueue& getGraphicsQueueRef() const;
+    const VkQueue& getPresentQueueRef() const;
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);
     
 private:

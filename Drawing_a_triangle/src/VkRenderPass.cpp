@@ -40,7 +40,30 @@ void VkRenderPassFactory::createRenderPass(const VkDeviceManager& deviceManager,
     renderPassInfo.pAttachments = &colorAttachment_m;
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass_m;
+    // subpass dependency
+    renderPassInfo.dependencyCount = 1;
+    auto dependency = createSubpassDependency();
+    renderPassInfo.pDependencies = &dependency;
     if (vkCreateRenderPass(deviceManager.getDevice(), 
         &renderPassInfo, nullptr, pRenderPass) != VK_SUCCESS)
             throw std::runtime_error("failed to create render pass!");
+}
+
+VkSubpassDependency VkRenderPassFactory::createSubpassDependency()
+{
+    VkSubpassDependency dependency{};
+    // the implicit subpass befor or after the render pass
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    // my subpass
+    // dstSubpass souhld be higher than srcSubpass to prevent cycles
+    dependency.dstSubpass = 0;
+    // the operations to wait on and the stages in which these operations occur
+    dependency.srcStageMask = 
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstStageMask = 
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstAccessMask = 
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    return dependency;
 }

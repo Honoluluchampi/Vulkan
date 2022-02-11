@@ -13,6 +13,7 @@ public:
     void createCommandBuffers(const VkDeviceManager& deviceManager, const VkRenderPass& renderPass, 
         const std::vector<VkFramebuffer>& swapChainFramebuffers, const VkPipeline& graphicsPipeline);
     void destroyCommandPoolandBuffers(const VkDevice& device);
+    const std::vector<VkCommandBuffer>& getCommandBufferRef() const;
 private:
     void executeCommandFunctions(const VkRenderPass& renderPass, const VkExtent2D& swapChainExtent, 
         const std::vector<VkFramebuffer>& swapChainFramebuffers, const VkPipeline& graphicsPipeline);
