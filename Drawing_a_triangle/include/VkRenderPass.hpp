@@ -9,9 +9,10 @@
 class VkRenderPassFactory
 {
 public:
-    void createRenderPass(const VkDeviceManager& deviceManager, VkRenderPass* pRenderPass);
+    void createRenderPass(const VkDevice& device, 
+        const VkFormat& swapChainImageFormat, VkRenderPass* pRenderPass);
 private:
-    void createAttachmentDescription(const VkDeviceManager& deviceManager);
+    void createAttachmentDescription(const VkFormat& swapChainImageFormat);
     void createSubPass();
     VkSubpassDependency createSubpassDependency();
 

@@ -4,11 +4,8 @@
 // how many frames should be processed concurrently
 constexpr size_t MAX_FRAMES_IN_FIGHT = 2;
 
-void VkRenderer::createSyncObjects(const VkDeviceManager& deviceManager)
+void VkRenderer::createSyncObjects(const VkDevice& device, size_t imagesNum)
 {
-    const auto& device = deviceManager.getDevice();
-    auto imagesNum = deviceManager.getSwapChainImagesNum();
-
     imageAvailableSemaphores_m.resize(MAX_FRAMES_IN_FIGHT);
     renderFinishedSemaphores_m.resize(MAX_FRAMES_IN_FIGHT);
     inFlightFences_m.resize(MAX_FRAMES_IN_FIGHT);
@@ -40,14 +37,13 @@ void VkRenderer::destroyRenderer(const VkDevice& device)
     }
 }
 
-void VkRenderer::drawFrame(const VkDeviceManager& deviceManager,
-    const std::vector<VkCommandBuffer>& commandBuffers)
+void VkRenderer::drawFrame(const VkDeviceManager& deviceManager, 
+    const VkSwapchainKHR& swapChain, const std::vector<VkCommandBuffer>& commandBuffers)
 {
+    const auto& device = deviceManager.getDevice();
     // Acquiring an image from the swap chain
     // index of the aquired image (VkImage in swapChainImages array)
     uint32_t imageIndex;
-    const auto& device = deviceManager.getDevice();
-    const auto& swapChain = deviceManager.getSwapChainRef();
     // specify a timeout in nanoseconds for an image
     auto timeout = UINT64_MAX;
 

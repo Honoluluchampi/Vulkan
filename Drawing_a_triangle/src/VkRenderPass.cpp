@@ -2,9 +2,9 @@
 #include <iostream>
 
 void VkRenderPassFactory::createAttachmentDescription
-    (const VkDeviceManager& deviceManager)
+    (const VkFormat& swapChainImageFormat)
 {
-    colorAttachment_m.format = deviceManager.getSwapChainImageFormat();
+    colorAttachment_m.format = swapChainImageFormat;
     colorAttachment_m.samples = VK_SAMPLE_COUNT_1_BIT;
     // what to do with the data in the attachment before and after rendering
     // clear the framebuffer to black before drawing a new frame
@@ -29,9 +29,10 @@ void VkRenderPassFactory::createSubPass()
     subpass_m.pColorAttachments = &colorAttachmentRef_m;
 }
 
-void VkRenderPassFactory::createRenderPass(const VkDeviceManager& deviceManager, VkRenderPass* pRenderPass)
+void VkRenderPassFactory::createRenderPass
+    (const VkDevice& device, const VkFormat& swapChainImageFormat, VkRenderPass* pRenderPass)
 {
-    createAttachmentDescription(deviceManager);
+    createAttachmentDescription(swapChainImageFormat);
     createSubPass();
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -44,8 +45,8 @@ void VkRenderPassFactory::createRenderPass(const VkDeviceManager& deviceManager,
     renderPassInfo.dependencyCount = 1;
     auto dependency = createSubpassDependency();
     renderPassInfo.pDependencies = &dependency;
-    if (vkCreateRenderPass(deviceManager.getDevice(), 
-        &renderPassInfo, nullptr, pRenderPass) != VK_SUCCESS)
+    if (vkCreateRenderPass(device, &renderPassInfo, 
+        nullptr, pRenderPass) != VK_SUCCESS)
             throw std::runtime_error("failed to create render pass!");
 }
 

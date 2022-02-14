@@ -6,9 +6,10 @@
 class VkRenderer
 {
 public:
-    void createSyncObjects(const VkDeviceManager& deviceManager);
+    void createSyncObjects(const VkDevice& device, size_t imagesNum);
     void destroyRenderer(const VkDevice& device);
-    void drawFrame(const VkDeviceManager& deviceManager, const std::vector<VkCommandBuffer>& commandBuffer);
+    void drawFrame(const VkDeviceManager& deviceManager, const VkSwapchainKHR& swapChain,
+        const std::vector<VkCommandBuffer>& commandBuffer);
 private:
     // an image has been acquired and is ready for rendering
     std::vector<VkSemaphore> imageAvailableSemaphores_m;

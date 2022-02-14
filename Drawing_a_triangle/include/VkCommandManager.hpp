@@ -11,8 +11,8 @@ public:
     // Command pools manage the memory that is used to store the buffers 
     // and com- mand buffers are allocated from them.
     void createCommandPool(const VkDeviceManager& deviceManager);
-    void createCommandBuffers(const VkDeviceManager& deviceManager, const VkRenderPass& renderPass, 
-        const std::vector<VkFramebuffer>& swapChainFramebuffers, const VkPipeline& graphicsPipeline);
+    void createCommandBuffers(const VkDevice& device, const VkRenderPass& renderPass, const std::vector<VkFramebuffer>& swapChainFramebuffers, 
+        const VkPipeline& graphicsPipeline, const VkExtent2D& swapChainExtent);
     void destroyCommandPoolandBuffers(const VkDevice& device);
     const std::vector<VkCommandBuffer>& getCommandBufferRef() const;
 private:

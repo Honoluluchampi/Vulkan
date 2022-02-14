@@ -52,36 +52,60 @@ void Application::initVulkan()
         upDebugger_m.reset(new VkDebugger());
         upDebugger_m->setupDebugMessenger(instance_m);
     }
-    upDeviceManager_m.reset(new VkDeviceManager(WIDTH, HEIGHT));
+    // device
+    upDeviceManager_m.reset(new VkDeviceManager());
     upDeviceManager_m->createSurface(instance_m, window_m);
     upDeviceManager_m->pickPhysicalDevice(instance_m);
     upDeviceManager_m->createLogicalDevice(enableValidationLayers_m, validationLayers_m);
-    upDeviceManager_m->createSwapChain();
-    upDeviceManager_m->createImageViews();
+    // swap chain
+    upSwapChainManager_m.reset(new VkSwapChainManager(getDeviceManagerRef().getDevice(),WIDTH,HEIGHT));
+    upSwapChainManager_m->createSwapChain(getDeviceManagerRef());
+    upSwapChainManager_m->createImageViews();
     // graphics pipeline
-    upGraphicsPipeline_m.reset(new VkGraphicsPipelineFactory(getDeviceManagerRef()));
-    upGraphicsPipeline_m->createGraphicsPipeline();
+    upGraphicsPipeline_m.reset(new VkGraphicsPipelineFactory());
+    upGraphicsPipeline_m->createGraphicsPipeline
+    (
+        upDeviceManager_m->getDevice(),
+        upSwapChainManager_m->getSwapChainExtentRef(),
+        upSwapChainManager_m->getSwapChainImageFormatRef()
+    );
     // framebuffer
     upFramebufferFactory_m.reset(new VkFramebufferFactory());
     upFramebufferFactory_m->createFramebuffers
-        (getDeviceManagerRef(), upGraphicsPipeline_m->getRenderPassRef());
+    (
+        upDeviceManager_m->getDevice(), 
+        getSwapChainManagerRef(),
+        upGraphicsPipeline_m->getRenderPassRef()
+    );
     // command buffer
     upCommandManager_m.reset(new VkCommandManager());
     upCommandManager_m->createCommandPool(getDeviceManagerRef());
-    upCommandManager_m->createCommandBuffers(getDeviceManagerRef(), 
+    upCommandManager_m->createCommandBuffers
+    (
+        upDeviceManager_m->getDevice(), 
         upGraphicsPipeline_m->getRenderPassRef(), 
         upFramebufferFactory_m->getSwapChainFrameBuffersRef(), 
-        upGraphicsPipeline_m->getGraphicsPipelineRef()
+        upGraphicsPipeline_m->getGraphicsPipelineRef(),
+        upSwapChainManager_m->getSwapChainExtentRef()
     );
     upRenderer_m.reset(new VkRenderer());
-    upRenderer_m->createSyncObjects(getDeviceManagerRef());
+    upRenderer_m->createSyncObjects
+    (
+        upDeviceManager_m->getDevice(),
+        upSwapChainManager_m->getSwapChainImagesNum()
+    );
 }
 
 void Application::mainLoop()
 {
     while (!glfwWindowShouldClose(window_m)){
         glfwPollEvents();
-        upRenderer_m->drawFrame(getDeviceManagerRef(), upCommandManager_m->getCommandBufferRef());
+        upRenderer_m->drawFrame
+        (
+            getDeviceManagerRef(),
+            upSwapChainManager_m->getSwapChainRef(),
+            upCommandManager_m->getCommandBufferRef()
+        );
     }
     // wait for the logical device to finish operations 
     // before exiting mainLoop and destroying the windwo
@@ -95,7 +119,8 @@ void Application::cleanup()
     // to prevent VkCommandManager.commandBuffers_m from double deleted
     upCommandManager_m.reset();
     upFramebufferFactory_m->destroyFramebuffers(getDeviceManagerRef());
-    upGraphicsPipeline_m->destroyGraphicsPipeline();
+    upGraphicsPipeline_m->destroyGraphicsPipeline(upDeviceManager_m->getDevice());
+    upSwapChainManager_m->destroySwapChain();
     // destroy logical device in its destructor
     upDeviceManager_m->deviceCleanup(instance_m);
     if (enableValidationLayers_m)
@@ -214,6 +239,7 @@ std::vector<const char*> Application::getRequiredExtensions()
 }
 
 const VkDeviceManager& Application::getDeviceManagerRef() const
-{
-    return *upDeviceManager_m;
-}
+    {return *upDeviceManager_m;}
+
+const VkSwapChainManager& Application::getSwapChainManagerRef() const
+    {return *upSwapChainManager_m;}

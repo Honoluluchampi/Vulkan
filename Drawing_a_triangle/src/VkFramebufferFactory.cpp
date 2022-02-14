@@ -7,12 +7,11 @@ std::vector<VkFramebuffer>& VkFramebufferFactory::getSwapChainFrameBuffersRef()
 }
 
 void VkFramebufferFactory::createFramebuffers
-    (const VkDeviceManager& deviceManager, const VkRenderPass& renderPass)
+    (const VkDevice& device, const VkSwapChainManager& swapChainManager, const VkRenderPass& renderPass)
 {
     // get refferences
-    const auto& device = deviceManager.getDevice();
-    const auto& swapChainExtent = deviceManager.getSwapChainExtent();
-    const auto& swapChainImageViews = deviceManager.getSwapChainImageViews();
+    const auto& swapChainExtent = swapChainManager.getSwapChainExtentRef();
+    const auto& swapChainImageViews = swapChainManager.getSwapChainImageViewsRef();
     swapChainFramebuffers_m.resize(swapChainImageViews.size());
 
     for(size_t i = 0; i < swapChainImageViews.size(); i++) {

@@ -5,6 +5,7 @@
 #include <memory>
 #include <VkDebugger.hpp>
 #include <VkDeviceManager.hpp>
+#include <VKSwapChainManager.hpp>
 #include <VkGraphicsPipeline.hpp>
 #include <VkRenderPass.hpp>
 #include <VkFramebufferFactory.hpp>
@@ -31,6 +32,7 @@ private:
     std::vector<const char*> getRequiredExtensions();
     // up's communication
     const VkDeviceManager& getDeviceManagerRef() const;
+    const VkSwapChainManager& getSwapChainManagerRef() const;
     // variables
     GLFWwindow* window_m;
     VkInstance instance_m;
@@ -39,6 +41,7 @@ private:
     // original debugger
     uptr_t<VkDebugger> upDebugger_m;
     uptr_t<VkDeviceManager> upDeviceManager_m;
+    uptr_t<VkSwapChainManager> upSwapChainManager_m;
     uptr_t<VkGraphicsPipelineFactory> upGraphicsPipeline_m;
     uptr_t<VkFramebufferFactory> upFramebufferFactory_m;
     uptr_t<VkCommandManager> upCommandManager_m;

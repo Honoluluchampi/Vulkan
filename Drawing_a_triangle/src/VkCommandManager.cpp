@@ -20,10 +20,9 @@ void VkCommandManager::createCommandPool(const VkDeviceManager& deviceManager)
 }
 
 void VkCommandManager::createCommandBuffers
-    (const VkDeviceManager& deviceManager, const VkRenderPass& renderPass,
-    const std::vector<VkFramebuffer>& swapChainFramebuffers,  const VkPipeline& graphicsPipeline)
+    (const VkDevice& device, const VkRenderPass& renderPass, const std::vector<VkFramebuffer>& swapChainFramebuffers,
+    const VkPipeline& graphicsPipeline, const VkExtent2D& swapChainExtent)
 {
-    const auto& device = deviceManager.getDevice();
     commandBuffers_m.resize(swapChainFramebuffers.size());
     // specify command pool and number of buffers to allocate
     VkCommandBufferAllocateInfo allocInfo{};
@@ -35,7 +34,6 @@ void VkCommandManager::createCommandBuffers
     if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers_m.data()) != VK_SUCCESS)
         throw std::runtime_error("failed to allocate command buffers!");
     // execute command buffer-relevant functions
-    const auto& swapChainExtent = deviceManager.getSwapChainExtent();
     executeCommandFunctions(renderPass, swapChainExtent, swapChainFramebuffers, graphicsPipeline);
 }
 

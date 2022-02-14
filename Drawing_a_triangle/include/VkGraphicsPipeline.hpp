@@ -8,9 +8,9 @@
 class VkGraphicsPipelineFactory
 {
 public:
-    VkGraphicsPipelineFactory(const VkDeviceManager& deviceManager);
-    void createGraphicsPipeline();
-    void destroyGraphicsPipeline();
+    void createGraphicsPipeline(const VkDevice& device, 
+        const VkExtent2D& swapChainExtent, const VkFormat& swapChainImageFormat);
+    void destroyGraphicsPipeline(const VkDevice& device);
     const VkRenderPass& getRenderPassRef();
     const VkPipeline& getGraphicsPipelineRef();
 private:
@@ -38,9 +38,8 @@ private:
     VkPipelineDynamicStateCreateInfo createDynamicState();
     // create uniform values (globals that can be changed at drawing time 
     // to alter the behavior of the shaders)
-    void createPipelineLayout();
+    void createPipelineLayout(const VkDevice& device);
     
-    const VkDeviceManager& deviceManager_m;
     VkShaderModule vertShaderModule_m;
     VkShaderModule fragShaderModule_m;
     VkPipelineLayout pipelineLayout_m;

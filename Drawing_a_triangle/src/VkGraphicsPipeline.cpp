@@ -15,9 +15,6 @@ const VkPipeline& VkGraphicsPipelineFactory::getGraphicsPipelineRef()
     return graphicsPipeline_m;
 }
 
-VkGraphicsPipelineFactory::VkGraphicsPipelineFactory(const VkDeviceManager& deviceManager)
-    :deviceManager_m(deviceManager){}
-
 static std::vector<char> readFile(const std::string& filename)
 {
     // ate : start reading at the end of the file
@@ -34,9 +31,9 @@ static std::vector<char> readFile(const std::string& filename)
     return buffer;
 }
 
-void VkGraphicsPipelineFactory::createGraphicsPipeline()
+void VkGraphicsPipelineFactory::createGraphicsPipeline
+    (const VkDevice& device, const VkExtent2D& swapChainExtent, const VkFormat& swapChainImageFormat)
 {
-    const auto& device  = deviceManager_m.getDevice();
     auto vertShaderCode = readFile("./spv/vert.spv");
     auto fragShaderCode = readFile("./spv/frag.spv");
     vertShaderModule_m  = createShaderModule(vertShaderCode, device);
@@ -50,8 +47,8 @@ void VkGraphicsPipelineFactory::createGraphicsPipeline()
     auto vertexInputInfo    =   createVertexInputInfo();
     auto inputAssemblyInfo  =   createInputAssemblyInfo();
     // viewport
-    auto viewport   =           createViewport(deviceManager_m.getSwapChainExtent());
-    auto scissor    =           createScissor(deviceManager_m.getSwapChainExtent());
+    auto viewport   =           createViewport(swapChainExtent);
+    auto scissor    =           createScissor(swapChainExtent);
     auto viewportInfo =         createViewportInfo(viewport, scissor);
     auto rasterizer =           createRasterizer();
     auto multisampling =        createMultisampleState();
@@ -74,10 +71,10 @@ void VkGraphicsPipelineFactory::createGraphicsPipeline()
     pipelineInfo.pColorBlendState = &colorBlendState;
     pipelineInfo.pDynamicState = nullptr;
     // pipeline layout
-    createPipelineLayout();
+    createPipelineLayout(device);
     pipelineInfo.layout = pipelineLayout_m;
     // render pass
-    renderPassFactory_m.createRenderPass(deviceManager_m, &renderPass_m);
+    renderPassFactory_m.createRenderPass(device, swapChainImageFormat, &renderPass_m);
     // pass by copy?
     pipelineInfo.renderPass = renderPass_m;
     pipelineInfo.subpass = 0;
@@ -287,7 +284,7 @@ VkPipelineDynamicStateCreateInfo VkGraphicsPipelineFactory::createDynamicState()
     return dynamicState;
 }
 
-void VkGraphicsPipelineFactory::createPipelineLayout()
+void VkGraphicsPipelineFactory::createPipelineLayout(const VkDevice& device)
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -295,13 +292,13 @@ void VkGraphicsPipelineFactory::createPipelineLayout()
     pipelineLayoutInfo.pSetLayouts = nullptr;
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
-    if (vkCreatePipelineLayout(deviceManager_m.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout_m) != VK_SUCCESS)
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout_m) != VK_SUCCESS)
         throw std::runtime_error("failed to create pipeline layout!");
 }
 
-void VkGraphicsPipelineFactory::destroyGraphicsPipeline()
+void VkGraphicsPipelineFactory::destroyGraphicsPipeline(const VkDevice& device)
 {
-    vkDestroyPipeline       (deviceManager_m.getDevice(), graphicsPipeline_m, nullptr);
-    vkDestroyPipelineLayout (deviceManager_m.getDevice(), pipelineLayout_m, nullptr);
-    vkDestroyRenderPass     (deviceManager_m.getDevice(), renderPass_m, nullptr);
+    vkDestroyPipeline       (device, graphicsPipeline_m, nullptr);
+    vkDestroyPipelineLayout (device, pipelineLayout_m, nullptr);
+    vkDestroyRenderPass     (device, renderPass_m, nullptr);
 }

@@ -3,15 +3,10 @@
 #include <GLFW/glfw3.h>
 #include <optional>
 #include <vector>
+#include <VKSwapChainManager.hpp>
 
 class VkDeviceManager
 {
-    struct QueueFamilyIndices
-    {
-        std::optional<uint32_t> graphicsFamily_m;
-        std::optional<uint32_t> presentFamily_m;
-        inline bool isComplete();
-    };
     struct SwapChainSupportDetails
     {
         VkSurfaceCapabilitiesKHR capabilities_m;
@@ -19,9 +14,14 @@ class VkDeviceManager
         std::vector<VkPresentModeKHR> presentModes_m;
     };
 
+    struct QueueFamilyIndices
+    {
+        std::optional<uint32_t> graphicsFamily_m;
+        std::optional<uint32_t> presentFamily_m;
+        inline bool isComplete();
+    };
+
 public:
-    VkDeviceManager(const uint32_t width, const uint32_t height)
-        : swapChainExtent_m{width, height}{}
     // relevant to physicaldevice
     void pickPhysicalDevice(VkInstance& instance);
     // relevant to logical device
@@ -33,31 +33,16 @@ public:
     void createImageViews();
     // make sure that you dont change the device_m out of this class
     const VkDevice& getDevice() const;
-    const VkExtent2D& getSwapChainExtent() const;
-    const VkFormat& getSwapChainImageFormat() const;
-    const std::vector<VkImageView>& getSwapChainImageViews() const;
     const VkPhysicalDevice& getPhysicalDevice() const;
-    const VkSwapchainKHR& getSwapChainRef() const;
     const VkQueue& getGraphicsQueueRef() const;
     const VkQueue& getPresentQueueRef() const;
-    const size_t getSwapChainImagesNum() const;
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device);
     
 private:
     bool isDeviceSuitable(const VkPhysicalDevice& device);
+    SwapChainSupportDetails querySwapChainSupport(const VkPhysicalDevice& device);
     // check for swap chain extension
     bool checkDeviceExtensionSupport(const VkPhysicalDevice& device);
-    SwapChainSupportDetails querySwapChainSupport(const VkPhysicalDevice& device);
-    // choosing the right settings for the swap chain
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const
-        std::vector<VkSurfaceFormatKHR>& availableFormats);
-    // most important settings for swap chain
-    VkPresentModeKHR chooseSwapPresentMode(const
-        std::vector<VkPresentModeKHR>& availablePresentModes);
-    // choose resolution of output
-    VkExtent2D chooseSwapExtent(const
-        VkSurfaceCapabilitiesKHR& capabilities);
-
     // implicitly destroyed when vkInstance is destroyed
     VkPhysicalDevice physicalDevice_m = VK_NULL_HANDLE;
     // logical device
@@ -71,12 +56,5 @@ private:
     {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
-    // swap chain
-    VkSwapchainKHR swapChain_m;
-    // handles of the VkImages in the swap chain
-    std::vector<VkImage> swapChainImages_m;
-    VkFormat swapChainImageFormat_m;
-    VkExtent2D swapChainExtent_m;
-    // image views
-    std::vector<VkImageView> swapChainImageViews_m;
+    friend void VkSwapChainManager::createSwapChain(const VkDeviceManager& deviceManager);
 };
