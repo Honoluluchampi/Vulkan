@@ -1,4 +1,4 @@
-Vulkan Tutorial en.pdf
+*.pdf
 /.vscode/*
 Dockerfile-former
 */obj/*

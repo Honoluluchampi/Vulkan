@@ -10,7 +10,6 @@ public:
         : deviceRef_m(device), swapChainExtent_m{width, height}{}
         
     void createSwapChain(const class VkDeviceManager& deviceManager);
-    void recreateSwapChain();
     void createImageViews();
     void destroySwapChain();
 

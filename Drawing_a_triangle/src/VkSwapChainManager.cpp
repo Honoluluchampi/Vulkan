@@ -75,9 +75,6 @@ void VkSwapChainManager::createSwapChain(const VkDeviceManager& _deviceManager)
     swapChainExtent_m = extent;
 }
 
-void VkSwapChainManager::recreateSwapChain()
-{}
-
 void VkSwapChainManager::createImageViews()
 {
     // create image view for all VkImage in the swap chain
