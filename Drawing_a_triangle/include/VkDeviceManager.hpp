@@ -28,9 +28,9 @@ public:
     void createLogicalDevice
         (const bool& enableValidationLayers, const std::vector<const char*>& validationLayers);
     void createSurface(const VkInstance& instance, GLFWwindow* window);
-    void deviceCleanup(const VkInstance& instance);
-    void createSwapChain();
-    void createImageViews();
+    void destroyLogicalDevice(const VkInstance& instance);
+    void destroyPhysicalDevice(const VkInstance& instance);
+    void destroySurface(const VkInstance& instance);
     // make sure that you dont change the device_m out of this class
     const VkDevice& getDevice() const;
     const VkPhysicalDevice& getPhysicalDevice() const;

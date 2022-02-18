@@ -51,7 +51,8 @@ private:
     // for initializing vulkan
     void initCreateFunctions();
     void initDestroyFunctions();
-    void execCreateFunctions(std::vector<VkStage> stages = {});
+    void execFunctionsSequence
+        (const std::vector<VkStageFunc>& targetFuncs, const std::vector<VkStage>& stages = {});
     void mainLoop();
     void cleanup();
     void checkingForExtensionSupport();
@@ -77,7 +78,7 @@ private:
     VkCommandManager commandManager_m;
     VkRenderer renderer_m;
     // createXX functions
-    std::vector<struct Application::VkStageFunc> createFunctions_m;
+    std::vector<VkStageFunc> createFunctions_m;
     // destroyXX functions
     std::vector<VkStageFunc> destroyFunctions_m;
 };

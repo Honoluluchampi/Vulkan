@@ -10,6 +10,7 @@ public:
         : deviceManagerRef_m(const_cast<VkDeviceManager&>(dm)) {}
     void createSwapChain(const uint32_t width, const uint32_t height);
     void createImageViews();
+    void destroyImageViews();
     void destroySwapChain();
 
     // getter

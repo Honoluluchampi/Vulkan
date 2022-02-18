@@ -46,7 +46,7 @@ void Application::initVulkan()
 {
     initCreateFunctions();
     // initDestroyFunctions();
-    execCreateFunctions();
+    execFunctionsSequence(createFunctions_m);
 }
 
 void Application::initCreateFunctions()
@@ -147,22 +147,93 @@ void Application::initCreateFunctions()
             });
 }
 
-void Application::execCreateFunctions(std::vector<VkStage> stages)
+void Application::initDestroyFunctions()
+{
+    destroyFunctions_m.emplace_back
+        (VkStage::RENDERER, [this]()
+        {
+            renderer_m.destroyRenderer(getDeviceManagerRef().getDevice());
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::COMMAND_BUFFER, [this]()
+        {
+            commandManager_m.destroyCommandBuffers(getDeviceManagerRef().getDevice());
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::COMMAND_POOL, [this]()
+        {
+            commandManager_m.destroyCommandPool(getDeviceManagerRef().getDevice());
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::FRAME_BUFFERS, [this]()
+        {
+            framebufferFactory_m.destroyFramebuffers(getDeviceManagerRef());
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::GRAPHICS_PIPELINE, [this]()
+        {
+            graphicsPipeline_m.destroyGraphicsPipeline(deviceManager_m.getDevice());
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::RENDER_PASS, [this]
+        {
+            graphicsPipeline_m.destroyRenderPass(deviceManager_m.getDevice());
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::IMAGE_VIEWS, [this]
+        {
+            swapChainManager_m.destroyImageViews();
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::SWAP_CHAIN, [this]
+        {
+            swapChainManager_m.destroySwapChain();
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::LOGICAL_DEVICE, [this]
+        {
+            deviceManager_m.destroyLogicalDevice(instance_m);
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::PHYSICAL_DEVICE, [this]
+        {
+            deviceManager_m.destroyPhysicalDevice(instance_m);
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::SURFACE, [this]
+        {
+            deviceManager_m.destroySurface(instance_m);
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::DEBUGGER, [this]
+        {
+            if (enableValidationLayers_m)
+                debugger_m.destroyDebugUtilsMessengerEXT(instance_m, nullptr);
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::INSTANCE, [this]
+        {
+            vkDestroyInstance(instance_m, nullptr);
+        });
+}
+
+void Application::execFunctionsSequence
+    (const std::vector<VkStageFunc>& targetFuncs, const std::vector<VkStage>& stages)
 {
     // execute all create functions
     if(stages.size() == 0)
-        for(const auto& func : createFunctions_m)
+        for(const auto& func : targetFuncs)
             func.func_m();
     // execute specified create functions
     else {
-        auto cursor = createFunctions_m.begin();
+        auto cursor = targetFuncs.begin();
         for(const auto& stage : stages) {
             // dont exceed the end of the function list
-            while(stage != cursor->stage_m && cursor != createFunctions_m.end()) 
+            while(stage != cursor->stage_m && cursor != targetFuncs.end()) 
                 cursor++;
             cursor->func_m();
         }
-        if (cursor == createFunctions_m.end())
+        if (cursor == targetFuncs.end())
             std::runtime_error("there is an invalid stage or dependency problem.");
     }
 }
@@ -185,18 +256,8 @@ void Application::mainLoop()
 
 void Application::cleanup()
 {
-    renderer_m.destroyRenderer(getDeviceManagerRef().getDevice());
-    commandManager_m.destroyCommandPoolandBuffers(getDeviceManagerRef().getDevice());
-    framebufferFactory_m.destroyFramebuffers(getDeviceManagerRef());
-    graphicsPipeline_m.destroyGraphicsPipeline(deviceManager_m.getDevice());
-    graphicsPipeline_m.destroyRenderPass(deviceManager_m.getDevice());
-    swapChainManager_m.destroySwapChain();
-    // destroy logical device in its destructor
-    deviceManager_m.deviceCleanup(instance_m);
-    if (enableValidationLayers_m)
-        debugger_m.destroyDebugUtilsMessengerEXT(instance_m, nullptr);
-    vkDestroyInstance(instance_m, nullptr);
     // once window_m is closed, destroy resources and terminate glfw
+    execFunctionsSequence(destroyFunctions_m);
     glfwDestroyWindow(window_m);
     glfwTerminate();
 }
@@ -313,7 +374,7 @@ void Application::recreateSwapChain()
     // wait for finishing the current task
     vkDeviceWaitIdle(deviceManager_m.getDevice());
     // recreation
-    execCreateFunctions();
+    execFunctionsSequence(createFunctions_m);
 }
 
 const VkDeviceManager& Application::getDeviceManagerRef() const

@@ -13,7 +13,8 @@ public:
     void createCommandPool(const VkDeviceManager& deviceManager);
     void createCommandBuffers(const VkDevice& device, const VkRenderPass& renderPass, const std::vector<VkFramebuffer>& swapChainFramebuffers, 
         const VkPipeline& graphicsPipeline, const VkExtent2D& swapChainExtent);
-    void destroyCommandPoolandBuffers(const VkDevice& device);
+    void destroyCommandPool(const VkDevice& device);
+    void destroyCommandBuffers(const VkDevice& device);
     const std::vector<VkCommandBuffer>& getCommandBufferRef() const;
 private:
     void executeCommandFunctions(const VkRenderPass& renderPass, const VkExtent2D& swapChainExtent, 

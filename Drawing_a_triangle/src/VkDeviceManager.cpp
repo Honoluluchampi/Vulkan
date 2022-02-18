@@ -17,11 +17,17 @@ const VkQueue& VkDeviceManager::getGraphicsQueueRef() const
 const VkQueue& VkDeviceManager::getPresentQueueRef() const
     {return presentQueue_m;}
 
-void VkDeviceManager::deviceCleanup(const VkInstance& instance)
+void VkDeviceManager::destroyLogicalDevice(const VkInstance& instance)
 {
     // VkQueue is automatically destroyed when its device is deleted
     vkDestroyDevice(device_m,nullptr);
-    // surface destruction
+}
+void VkDeviceManager::destroyPhysicalDevice(const VkInstance& instance)
+{
+    // nothing to do
+}
+void VkDeviceManager::destroySurface(const VkInstance& instance)
+{
     vkDestroySurfaceKHR(instance, surface_m, nullptr);
 }
 // get apps VkInstance

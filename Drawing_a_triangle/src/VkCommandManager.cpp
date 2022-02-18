@@ -37,9 +37,14 @@ void VkCommandManager::createCommandBuffers
     executeCommandFunctions(renderPass, swapChainExtent, swapChainFramebuffers, graphicsPipeline);
 }
 
-void VkCommandManager::destroyCommandPoolandBuffers(const VkDevice& device)
+void VkCommandManager::destroyCommandPool(const VkDevice& device)
 {
     vkDestroyCommandPool(device, commandPool_m, nullptr);
+}
+
+void VkCommandManager::destroyCommandBuffers(const VkDevice& device)
+{
+    // nothing to do
 }
 
 void VkCommandManager::executeCommandFunctions

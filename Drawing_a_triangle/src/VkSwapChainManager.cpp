@@ -103,11 +103,15 @@ void VkSwapChainManager::createImageViews()
     }
 }
 
-void VkSwapChainManager::destroySwapChain()
+void VkSwapChainManager::destroyImageViews()
 {
     for (auto& imageView : swapChainImageViews_m) {
         vkDestroyImageView(deviceManagerRef_m.getDevice(), imageView, nullptr);
     }
+}
+
+void VkSwapChainManager::destroySwapChain()
+{
     vkDestroySwapchainKHR(deviceManagerRef_m.getDevice(), swapChain_m, nullptr);
 }
 
