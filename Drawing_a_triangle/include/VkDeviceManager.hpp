@@ -56,5 +56,5 @@ private:
     {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
-    friend void VkSwapChainManager::createSwapChain(const VkDeviceManager& deviceManager);
+    friend void VkSwapChainManager::createSwapChain(const uint32_t width, const uint32_t height);
 };

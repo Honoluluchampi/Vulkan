@@ -13,11 +13,10 @@ const VkSwapchainKHR& VkSwapChainManager::getSwapChainRef() const
 const size_t VkSwapChainManager::getSwapChainImagesNum() const
     { return swapChainImages_m.size(); }
 
-void VkSwapChainManager::createSwapChain(const VkDeviceManager& _deviceManager)
+void VkSwapChainManager::createSwapChain(const uint32_t width, const uint32_t height)
 {
     // dangerous cast
-    auto deviceManager = const_cast<VkDeviceManager&>(_deviceManager);
-    auto swapChainSupport = deviceManager.querySwapChainSupport(deviceManager.physicalDevice_m);
+    auto swapChainSupport = deviceManagerRef_m.querySwapChainSupport(deviceManagerRef_m.physicalDevice_m);
     auto surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats_m);
     auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes_m);
     auto extent = chooseSwapExtent(swapChainSupport.capabilities_m);
@@ -31,7 +30,7 @@ void VkSwapChainManager::createSwapChain(const VkDeviceManager& _deviceManager)
     // fill in a structure with required information
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = deviceManager.surface_m;
+    createInfo.surface = deviceManagerRef_m.surface_m;
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -40,7 +39,7 @@ void VkSwapChainManager::createSwapChain(const VkDeviceManager& _deviceManager)
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     // specify how to handle swap chain images by multiple queue families
-    auto indices = deviceManager.findQueueFamilies(deviceManager.physicalDevice_m);
+    auto indices = deviceManagerRef_m.findQueueFamilies(deviceManagerRef_m.physicalDevice_m);
     uint32_t queueFamilyIndices[] = {indices.graphicsFamily_m.value(),
         indices.presentFamily_m.value()};
     if (indices.graphicsFamily_m != indices.presentFamily_m) {
@@ -64,13 +63,13 @@ void VkSwapChainManager::createSwapChain(const VkDeviceManager& _deviceManager)
     // invalid or unoptimized swap chain should be reacreated from scratch
     createInfo.oldSwapchain = VK_NULL_HANDLE;
     // create swap chain
-    if (vkCreateSwapchainKHR(deviceRef_m, &createInfo, nullptr, &swapChain_m) != VK_SUCCESS) {
+    if (vkCreateSwapchainKHR(deviceManagerRef_m.device_m, &createInfo, nullptr, &swapChain_m) != VK_SUCCESS) {
         throw std::runtime_error("failed to create swap chain!");
     }
     // retrieving the handles of images in the swap chain
-    vkGetSwapchainImagesKHR(deviceRef_m, swapChain_m, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(deviceManagerRef_m.device_m, swapChain_m, &imageCount, nullptr);
     swapChainImages_m.resize(imageCount);
-    vkGetSwapchainImagesKHR(deviceRef_m, swapChain_m, &imageCount, swapChainImages_m.data());
+    vkGetSwapchainImagesKHR(deviceManagerRef_m.device_m, swapChain_m, &imageCount, swapChainImages_m.data());
     swapChainImageFormat_m = surfaceFormat.format;
     swapChainExtent_m = extent;
 }
@@ -97,7 +96,7 @@ void VkSwapChainManager::createImageViews()
         createInfo.subresourceRange.levelCount = 1;
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
-        if (vkCreateImageView(deviceRef_m, &createInfo, nullptr,
+        if (vkCreateImageView(deviceManagerRef_m.getDevice(), &createInfo, nullptr,
             &swapChainImageViews_m[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create image views!");
         }
@@ -107,9 +106,9 @@ void VkSwapChainManager::createImageViews()
 void VkSwapChainManager::destroySwapChain()
 {
     for (auto& imageView : swapChainImageViews_m) {
-        vkDestroyImageView(deviceRef_m, imageView, nullptr);
+        vkDestroyImageView(deviceManagerRef_m.getDevice(), imageView, nullptr);
     }
-    vkDestroySwapchainKHR(deviceRef_m, swapChain_m, nullptr);
+    vkDestroySwapchainKHR(deviceManagerRef_m.getDevice(), swapChain_m, nullptr);
 }
 
 VkSurfaceFormatKHR VkSwapChainManager::chooseSwapSurfaceFormat

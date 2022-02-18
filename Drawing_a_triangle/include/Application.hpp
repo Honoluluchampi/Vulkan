@@ -19,20 +19,25 @@ class Application
     using uptr_t = std::unique_ptr<T>;
     enum class VkStage
     {
-        VK_INSTANCE,
-        VK_DEBUGGER,
-        VK_DEVICE_MANAGER,
-        VK_SWAP_CHAIN_MANAGER,
-        VK_GRAPHICS_PIPELINE,
-        VK_FRAME_BUFFER,
-        VK_COMMAND_BUFFER,
-        VK_RENDERER
+        INSTANCE,
+        DEBUGGER,
+        SURFACE,
+        PHYSICAL_DEVICE,
+        LOGICAL_DEVICE,
+        SWAP_CHAIN,
+        IMAGE_VIEWS,
+        RENDER_PASS,
+        GRAPHICS_PIPELINE,
+        FRAME_BUFFERS,
+        COMMAND_POOL,
+        COMMAND_BUFFER,
+        RENDERER
     };
-    struct VkCreateFunc
+    struct VkStageFunc
     {
         VkStage stage_m;
         std::function<void(void)>func_m;
-        VkCreateFunc(VkStage stage, std::function<void(void)>func)
+        VkStageFunc(VkStage stage, std::function<void(void)>func)
             :stage_m(stage), func_m(func) {}
     };
     //struct VkDestroyFunc;
@@ -46,7 +51,7 @@ private:
     // for initializing vulkan
     void initCreateFunctions();
     void initDestroyFunctions();
-    void execCreateFunctions();
+    void execCreateFunctions(std::vector<VkStage> stages = {});
     void mainLoop();
     void cleanup();
     void checkingForExtensionSupport();
@@ -64,15 +69,15 @@ private:
     std::vector<const char*> validationLayers_m;
     bool enableValidationLayers_m;
     // original debugger
-    uptr_t<VkDebugger> upDebugger_m;
-    uptr_t<VkDeviceManager> upDeviceManager_m;
-    uptr_t<VkSwapChainManager> upSwapChainManager_m;
-    uptr_t<VkGraphicsPipelineFactory> upGraphicsPipeline_m;
-    uptr_t<VkFramebufferFactory> upFramebufferFactory_m;
-    uptr_t<VkCommandManager> upCommandManager_m;
-    uptr_t<VkRenderer> upRenderer_m;
+    VkDebugger debugger_m;
+    VkDeviceManager deviceManager_m;
+    VkSwapChainManager swapChainManager_m;
+    VkGraphicsPipelineFactory graphicsPipeline_m;
+    VkFramebufferFactory framebufferFactory_m;
+    VkCommandManager commandManager_m;
+    VkRenderer renderer_m;
     // createXX functions
-    std::vector<struct Application::VkCreateFunc> createFunctions_m;
+    std::vector<struct Application::VkStageFunc> createFunctions_m;
     // destroyXX functions
-    //std::vector<VkDestroy Func> destroyFunctions_m;
+    std::vector<VkStageFunc> destroyFunctions_m;
 };

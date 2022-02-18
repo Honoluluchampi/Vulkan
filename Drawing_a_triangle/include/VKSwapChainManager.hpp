@@ -5,11 +5,10 @@
 
 class VkSwapChainManager
 {
-public:
-    VkSwapChainManager(const VkDevice& device, const uint32_t width, const uint32_t height)
-        : deviceRef_m(device), swapChainExtent_m{width, height}{}
-        
-    void createSwapChain(const class VkDeviceManager& deviceManager);
+public: 
+    VkSwapChainManager(const class VkDeviceManager& dm)
+        : deviceManagerRef_m(const_cast<VkDeviceManager&>(dm)) {}
+    void createSwapChain(const uint32_t width, const uint32_t height);
     void createImageViews();
     void destroySwapChain();
 
@@ -29,7 +28,7 @@ private:
     // choose resolution of output
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-    const VkDevice& deviceRef_m;
+    class VkDeviceManager& deviceManagerRef_m;
     VkSwapchainKHR swapChain_m;
     // handles of VkImages in a swap chain
     std::vector<VkImage> swapChainImages_m;

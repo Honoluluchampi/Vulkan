@@ -11,7 +11,7 @@ constexpr uint32_t WIDTH = 800;
 constexpr uint32_t HEIGHT = 600;
 
 // init app's information variables
-Application::Application()
+Application::Application() : deviceManager_m(), swapChainManager_m(getDeviceManagerRef())
 {
     validationLayers_m = {
     "VK_LAYER_KHRONOS_validation"
@@ -52,88 +52,94 @@ void Application::initVulkan()
 void Application::initCreateFunctions()
 {
     createFunctions_m.emplace_back
-        (VkStage::VK_INSTANCE, [this]()
+        (VkStage::INSTANCE, [this]()
             {
                 // window surface should be created right after the
                 // instance creation, because it can actually influence the physical device selection
                 createInstance();
             });
     createFunctions_m.emplace_back
-        (VkStage::VK_DEBUGGER, [this]()
+        (VkStage::DEBUGGER, [this]()
             {
                 if(enableValidationLayers_m){
-                    upDebugger_m.reset(new VkDebugger());
                     // Allocate debugger 
-                    upDebugger_m->setupDebugMessenger(instance_m);
+                    debugger_m.setupDebugMessenger(instance_m);
                 }
             });
     createFunctions_m.emplace_back
-        (VkStage::VK_DEVICE_MANAGER, [this]()
+        (VkStage::SURFACE, [this]()
             {
-                upDeviceManager_m.reset(new VkDeviceManager());
-                upDeviceManager_m->createSurface(instance_m, window_m);
-                upDeviceManager_m->pickPhysicalDevice(instance_m);
-                upDeviceManager_m->createLogicalDevice(enableValidationLayers_m, validationLayers_m);
+                deviceManager_m.createSurface(instance_m, window_m);
+                deviceManager_m.pickPhysicalDevice(instance_m);
+                deviceManager_m.createLogicalDevice(enableValidationLayers_m, validationLayers_m);
             });
     createFunctions_m.emplace_back
-        (VkStage::VK_SWAP_CHAIN_MANAGER, [this]()
+        (VkStage::SWAP_CHAIN, [this]()
             {
-                upSwapChainManager_m.reset(new VkSwapChainManager(getDeviceManagerRef().getDevice(),WIDTH,HEIGHT));
-                upSwapChainManager_m->createSwapChain(getDeviceManagerRef());
-                upSwapChainManager_m->createImageViews();
+                swapChainManager_m.createSwapChain(WIDTH, HEIGHT);
+                swapChainManager_m.createImageViews();
             });
     createFunctions_m.emplace_back
-        (VkStage::VK_GRAPHICS_PIPELINE, [this]()
+        (VkStage::GRAPHICS_PIPELINE, [this]()
             {
-                upGraphicsPipeline_m.reset(new VkGraphicsPipelineFactory());
-                upGraphicsPipeline_m->createGraphicsPipeline
+                graphicsPipeline_m.createGraphicsPipeline
                 (
-                    upDeviceManager_m->getDevice(),
-                    upSwapChainManager_m->getSwapChainExtentRef(),
-                    upSwapChainManager_m->getSwapChainImageFormatRef()
+                    deviceManager_m.getDevice(),
+                    swapChainManager_m.getSwapChainExtentRef(),
+                    swapChainManager_m.getSwapChainImageFormatRef()
                 );
             });
     createFunctions_m.emplace_back
-        (VkStage::VK_FRAME_BUFFER, [this]()
+        (VkStage::FRAME_BUFFERS, [this]()
             {
-                upFramebufferFactory_m.reset(new VkFramebufferFactory());
-                upFramebufferFactory_m->createFramebuffers
+                framebufferFactory_m.createFramebuffers
                 (
-                    upDeviceManager_m->getDevice(), 
+                    deviceManager_m.getDevice(), 
                     getSwapChainManagerRef(),
-                    upGraphicsPipeline_m->getRenderPassRef()
+                    graphicsPipeline_m.getRenderPassRef()
                 );
             });
     createFunctions_m.emplace_back
-        (VkStage::VK_COMMAND_BUFFER, [this]()
+        (VkStage::COMMAND_BUFFER, [this]()
             {
-                upCommandManager_m.reset(new VkCommandManager());
-                upCommandManager_m->createCommandPool(getDeviceManagerRef());
-                upCommandManager_m->createCommandBuffers
+                commandManager_m.createCommandPool(getDeviceManagerRef());
+                commandManager_m.createCommandBuffers
                 (
-                    upDeviceManager_m->getDevice(), 
-                    upGraphicsPipeline_m->getRenderPassRef(), 
-                    upFramebufferFactory_m->getSwapChainFrameBuffersRef(), 
-                    upGraphicsPipeline_m->getGraphicsPipelineRef(),
-                    upSwapChainManager_m->getSwapChainExtentRef()
+                    deviceManager_m.getDevice(), 
+                    graphicsPipeline_m.getRenderPassRef(), 
+                    framebufferFactory_m.getSwapChainFrameBuffersRef(), 
+                    graphicsPipeline_m.getGraphicsPipelineRef(),
+                    swapChainManager_m.getSwapChainExtentRef()
                 );
             });
     createFunctions_m.emplace_back
-        (VkStage::VK_RENDERER, [this]()
+        (VkStage::RENDERER, [this]()
             {
-                upRenderer_m.reset(new VkRenderer());
-                upRenderer_m->createSyncObjects
+                renderer_m.createSyncObjects
                 (
-                    upDeviceManager_m->getDevice(),
-                    upSwapChainManager_m->getSwapChainImagesNum()
+                    deviceManager_m.getDevice(),
+                    swapChainManager_m.getSwapChainImagesNum()
                 );
             });
 }
 
-void Application::execCreateFunctions()
+void Application::execCreateFunctions(std::vector<VkStage> stages)
 {
-    for(const auto& func : createFunctions_m){
-        func.func_m();
+    // execute all create functions
+    if(stages.size() == 0)
+        for(const auto& func : createFunctions_m)
+            func.func_m();
+    // execute specified create functions
+    else {
+        auto cursor = createFunctions_m.begin();
+        for(const auto& stage : stages) {
+            // dont exceed the end of the function list
+            while(stage != cursor->stage_m && cursor != createFunctions_m.end()) 
+                cursor++;
+            cursor->func_m();
+        }
+        if (cursor == createFunctions_m.end())
+            std::runtime_error("there is an invalid stage or dependency problem.");
     }
 }
 
@@ -141,31 +147,29 @@ void Application::mainLoop()
 {
     while (!glfwWindowShouldClose(window_m)){
         glfwPollEvents();
-        upRenderer_m->drawFrame
+        renderer_m.drawFrame
         (
             getDeviceManagerRef(),
-            upSwapChainManager_m->getSwapChainRef(),
-            upCommandManager_m->getCommandBufferRef()
+            swapChainManager_m.getSwapChainRef(),
+            commandManager_m.getCommandBufferRef()
         );
     }
     // wait for the logical device to finish operations 
     // before exiting mainLoop and destroying the windwo
-    vkDeviceWaitIdle(upDeviceManager_m->getDevice());
+    vkDeviceWaitIdle(deviceManager_m.getDevice());
 }
 
 void Application::cleanup()
 {
-    upRenderer_m->destroyRenderer(getDeviceManagerRef().getDevice());
-    upCommandManager_m->destroyCommandPoolandBuffers(getDeviceManagerRef().getDevice());
-    // to prevent VkCommandManager.commandBuffers_m from double deleted
-    upCommandManager_m.reset();
-    upFramebufferFactory_m->destroyFramebuffers(getDeviceManagerRef());
-    upGraphicsPipeline_m->destroyGraphicsPipeline(upDeviceManager_m->getDevice());
-    upSwapChainManager_m->destroySwapChain();
+    renderer_m.destroyRenderer(getDeviceManagerRef().getDevice());
+    commandManager_m.destroyCommandPoolandBuffers(getDeviceManagerRef().getDevice());
+    framebufferFactory_m.destroyFramebuffers(getDeviceManagerRef());
+    graphicsPipeline_m.destroyGraphicsPipeline(deviceManager_m.getDevice());
+    swapChainManager_m.destroySwapChain();
     // destroy logical device in its destructor
-    upDeviceManager_m->deviceCleanup(instance_m);
+    deviceManager_m.deviceCleanup(instance_m);
     if (enableValidationLayers_m)
-        upDebugger_m->destroyDebugUtilsMessengerEXT(instance_m, nullptr);
+        debugger_m.destroyDebugUtilsMessengerEXT(instance_m, nullptr);
     vkDestroyInstance(instance_m, nullptr);
     // once window_m is closed, destroy resources and terminate glfw
     glfwDestroyWindow(window_m);
@@ -282,15 +286,13 @@ std::vector<const char*> Application::getRequiredExtensions()
 void Application::recreateSwapChain()
 {
     // wait for finishing the current task
-    vkDeviceWaitIdle(upDeviceManager_m->getDevice());
+    vkDeviceWaitIdle(deviceManager_m.getDevice());
     // recreation
-    upSwapChainManager_m->createSwapChain(getDeviceManagerRef());
-    upSwapChainManager_m->createImageViews();
-    //upGraphicsPipeline_m->createGraphicsPipeline();
+    execCreateFunctions();
 }
 
 const VkDeviceManager& Application::getDeviceManagerRef() const
-    {return *upDeviceManager_m;}
+    {return deviceManager_m;}
 
 const VkSwapChainManager& Application::getSwapChainManagerRef() const
-    {return *upSwapChainManager_m;}
+    {return swapChainManager_m;}
