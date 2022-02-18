@@ -31,8 +31,14 @@ static std::vector<char> readFile(const std::string& filename)
     return buffer;
 }
 
+void VkGraphicsPipelineFactory::createRenderPass(const VkDevice& device, const VkFormat& swapChainImageFormat)
+{
+    // render pass
+    renderPassFactory_m.createRenderPass(device, swapChainImageFormat, &renderPass_m);
+}
+
 void VkGraphicsPipelineFactory::createGraphicsPipeline
-    (const VkDevice& device, const VkExtent2D& swapChainExtent, const VkFormat& swapChainImageFormat)
+    (const VkDevice& device, const VkExtent2D& swapChainExtent)
 {
     auto vertShaderCode = readFile("./spv/vert.spv");
     auto fragShaderCode = readFile("./spv/frag.spv");
@@ -73,8 +79,6 @@ void VkGraphicsPipelineFactory::createGraphicsPipeline
     // pipeline layout
     createPipelineLayout(device);
     pipelineInfo.layout = pipelineLayout_m;
-    // render pass
-    renderPassFactory_m.createRenderPass(device, swapChainImageFormat, &renderPass_m);
     // pass by copy?
     pipelineInfo.renderPass = renderPass_m;
     pipelineInfo.subpass = 0;
@@ -300,5 +304,9 @@ void VkGraphicsPipelineFactory::destroyGraphicsPipeline(const VkDevice& device)
 {
     vkDestroyPipeline       (device, graphicsPipeline_m, nullptr);
     vkDestroyPipelineLayout (device, pipelineLayout_m, nullptr);
+}
+
+void VkGraphicsPipelineFactory::destroyRenderPass(const VkDevice& device)
+{
     vkDestroyRenderPass     (device, renderPass_m, nullptr);
 }

@@ -70,14 +70,35 @@ void Application::initCreateFunctions()
         (VkStage::SURFACE, [this]()
             {
                 deviceManager_m.createSurface(instance_m, window_m);
+            });
+    createFunctions_m.emplace_back
+        (VkStage::PHYSICAL_DEVICE, [this]()
+            {
                 deviceManager_m.pickPhysicalDevice(instance_m);
+            });
+    createFunctions_m.emplace_back
+        (VkStage::LOGICAL_DEVICE, [this]()
+            {
                 deviceManager_m.createLogicalDevice(enableValidationLayers_m, validationLayers_m);
             });
     createFunctions_m.emplace_back
         (VkStage::SWAP_CHAIN, [this]()
             {
                 swapChainManager_m.createSwapChain(WIDTH, HEIGHT);
-                swapChainManager_m.createImageViews();
+            });
+    createFunctions_m.emplace_back
+        (VkStage::IMAGE_VIEWS, [this]()
+            {
+                swapChainManager_m.createImageViews(); 
+            });
+    createFunctions_m.emplace_back
+        (VkStage::RENDER_PASS, [this]()
+            {
+                graphicsPipeline_m.createRenderPass
+                (
+                    deviceManager_m.getDevice(),
+                    swapChainManager_m.getSwapChainImageFormatRef()
+                );
             });
     createFunctions_m.emplace_back
         (VkStage::GRAPHICS_PIPELINE, [this]()
@@ -85,8 +106,7 @@ void Application::initCreateFunctions()
                 graphicsPipeline_m.createGraphicsPipeline
                 (
                     deviceManager_m.getDevice(),
-                    swapChainManager_m.getSwapChainExtentRef(),
-                    swapChainManager_m.getSwapChainImageFormatRef()
+                    swapChainManager_m.getSwapChainExtentRef()
                 );
             });
     createFunctions_m.emplace_back
@@ -100,9 +120,13 @@ void Application::initCreateFunctions()
                 );
             });
     createFunctions_m.emplace_back
-        (VkStage::COMMAND_BUFFER, [this]()
+        (VkStage::COMMAND_POOL, [this]()
             {
                 commandManager_m.createCommandPool(getDeviceManagerRef());
+            });
+    createFunctions_m.emplace_back
+        (VkStage::COMMAND_BUFFER, [this]()
+            {
                 commandManager_m.createCommandBuffers
                 (
                     deviceManager_m.getDevice(), 
@@ -165,6 +189,7 @@ void Application::cleanup()
     commandManager_m.destroyCommandPoolandBuffers(getDeviceManagerRef().getDevice());
     framebufferFactory_m.destroyFramebuffers(getDeviceManagerRef());
     graphicsPipeline_m.destroyGraphicsPipeline(deviceManager_m.getDevice());
+    graphicsPipeline_m.destroyRenderPass(deviceManager_m.getDevice());
     swapChainManager_m.destroySwapChain();
     // destroy logical device in its destructor
     deviceManager_m.deviceCleanup(instance_m);

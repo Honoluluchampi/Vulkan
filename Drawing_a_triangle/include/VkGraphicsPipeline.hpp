@@ -8,9 +8,10 @@
 class VkGraphicsPipelineFactory
 {
 public:
-    void createGraphicsPipeline(const VkDevice& device, 
-        const VkExtent2D& swapChainExtent, const VkFormat& swapChainImageFormat);
+    void createGraphicsPipeline(const VkDevice& device, const VkExtent2D& swapChainExtent);
+    void createRenderPass(const VkDevice& device, const VkFormat& swapChainImageFormat);
     void destroyGraphicsPipeline(const VkDevice& device);
+    void destroyRenderPass(const VkDevice& device);
     const VkRenderPass& getRenderPassRef();
     const VkPipeline& getGraphicsPipelineRef();
 private:
