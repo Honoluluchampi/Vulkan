@@ -36,8 +36,8 @@ void VkRenderer::destroyRenderer(const VkDevice& device)
         vkDestroyFence(device, inFlightFences_m[i], nullptr);
     }
 }
-
-void VkRenderer::drawFrame(const VkDeviceManager& deviceManager, 
+// true : up to date, false : out of date
+bool VkRenderer::drawFrame(const VkDeviceManager& deviceManager, 
     const VkSwapchainKHR& swapChain, const std::vector<VkCommandBuffer>& commandBuffers)
 {
     const auto& device = deviceManager.getDevice();
@@ -51,8 +51,15 @@ void VkRenderer::drawFrame(const VkDeviceManager& deviceManager,
     vkWaitForFences(device, 1, &inFlightFences_m[currentFrame_m], VK_TRUE, timeout);
 
     // after acquiring image, the imageSemaphore is signaled
-    vkAcquireNextImageKHR(device, swapChain, timeout,
+    VkResult result = vkAcquireNextImageKHR(device, swapChain, timeout,
         imageAvailableSemaphores_m[currentFrame_m], VK_NULL_HANDLE, &imageIndex);
+    // figure out when swap chain recreation is necessary
+    if(result == VK_ERROR_OUT_OF_DATE_KHR)
+        return false;
+    // VK_SUBOPTIMAL_KHR is still able to present to it
+    else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+        throw std::runtime_error("failed to aquire swap chain image!");
+
     // check if a previous frame is using this image
     if(imagesInFlight_m[imageIndex] != VK_NULL_HANDLE)
         vkWaitForFences(device, 1, &imagesInFlight_m[imageIndex], VK_TRUE, timeout);
@@ -103,7 +110,14 @@ void VkRenderer::drawFrame(const VkDeviceManager& deviceManager,
     // necessary for multi swap chain
     presentInfo.pResults = nullptr; // optional
     const auto& presentQueue = deviceManager.getPresentQueueRef();
-    vkQueuePresentKHR(presentQueue, &presentInfo);
-
-    currentFrame_m = (currentFrame_m + 1) % MAX_FRAMES_IN_FIGHT;
+    result = vkQueuePresentKHR(presentQueue, &presentInfo);
+    
+    if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+        framebufferResized = false;
+        currentFrame_m = (currentFrame_m + 1) % MAX_FRAMES_IN_FIGHT;
+        return false;
+    }
+    else if(result != VK_SUCCESS)
+        throw std::runtime_error("failed to present swap chain image!");
+    return true;
 }

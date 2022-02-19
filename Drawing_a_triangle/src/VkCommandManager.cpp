@@ -44,7 +44,10 @@ void VkCommandManager::destroyCommandPool(const VkDevice& device)
 
 void VkCommandManager::destroyCommandBuffers(const VkDevice& device)
 {
-    // nothing to do
+    // for reusing command buffers
+    vkFreeCommandBuffers(device, commandPool_m,
+        static_cast<uint32_t>(commandBuffers_m.size()),
+        commandBuffers_m.data());
 }
 
 void VkCommandManager::executeCommandFunctions

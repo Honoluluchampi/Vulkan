@@ -43,7 +43,7 @@ class Application
     //struct VkDestroyFunc;
 public:
     Application();
-    void  run();
+    void run();
 private:
     // functions
     void initWindow();
@@ -59,6 +59,8 @@ private:
     bool checkValidationLayerSupport();
     void createInstance();
     void recreateSwapChain();
+    // handle framebuffer resizes
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
     // message callback
     std::vector<const char*> getRequiredExtensions();
     // up's communication

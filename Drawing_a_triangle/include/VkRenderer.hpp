@@ -8,8 +8,11 @@ class VkRenderer
 public:
     void createSyncObjects(const VkDevice& device, size_t imagesNum);
     void destroyRenderer(const VkDevice& device);
-    void drawFrame(const VkDeviceManager& deviceManager, const VkSwapchainKHR& swapChain,
+    bool drawFrame(const VkDeviceManager& deviceManager, const VkSwapchainKHR& swapChain,
         const std::vector<VkCommandBuffer>& commandBuffer);
+
+    // handle resizes explicitly
+    bool framebufferResized = false;
 private:
     // an image has been acquired and is ready for rendering
     std::vector<VkSemaphore> imageAvailableSemaphores_m;
