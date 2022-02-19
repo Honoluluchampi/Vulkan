@@ -209,6 +209,14 @@ std::vector<const char*> Application::getRequiredExtensions()
 
 void Application::recreateSwapChain()
 {
+    // stop calculation until the window is minimized
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(window_m, &width, &height);
+    while(width == 0 || height ==0) {
+        glfwGetFramebufferSize(window_m, &width, &height);
+        glfwWaitEvents();
+    }
+
     // wait for finishing the current task
     vkDeviceWaitIdle(deviceManager_m.getDevice());
     // recreation
