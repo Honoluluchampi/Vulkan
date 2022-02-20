@@ -294,6 +294,11 @@ void Application::initCreateFunctions()
                 );
             });
     createFunctions_m.emplace_back
+        (VkStage::VERTEX_FACTORY, [this]()
+            {
+               vertexFactory_m.createVerticesData();
+            });
+    createFunctions_m.emplace_back
         (VkStage::GRAPHICS_PIPELINE, [this]()
             {
                 graphicsPipeline_m.createGraphicsPipeline

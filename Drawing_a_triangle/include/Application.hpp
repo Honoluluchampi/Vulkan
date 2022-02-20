@@ -12,6 +12,7 @@
 #include <VkFramebufferFactory.hpp>
 #include <VkCommandManager.hpp>
 #include <VkRenderer.hpp>
+#include <VkVertexFactory.hpp>
 
 class Application
 {
@@ -27,6 +28,7 @@ class Application
         SWAP_CHAIN,
         IMAGE_VIEWS,
         RENDER_PASS,
+        VERTEX_FACTORY,
         GRAPHICS_PIPELINE,
         FRAME_BUFFERS,
         COMMAND_POOL,
@@ -71,6 +73,10 @@ private:
     VkInstance instance_m;
     std::vector<const char*> validationLayers_m;
     bool enableValidationLayers_m;
+    // createXX functions
+    std::vector<VkStageFunc> createFunctions_m;
+    // destroyXX functions
+    std::vector<VkStageFunc> destroyFunctions_m;
     // original debugger
     VkDebugger debugger_m;
     VkDeviceManager deviceManager_m;
@@ -79,8 +85,5 @@ private:
     VkFramebufferFactory framebufferFactory_m;
     VkCommandManager commandManager_m;
     VkRenderer renderer_m;
-    // createXX functions
-    std::vector<VkStageFunc> createFunctions_m;
-    // destroyXX functions
-    std::vector<VkStageFunc> destroyFunctions_m;
+    VkVertexFactory vertexFactory_m;
 };
