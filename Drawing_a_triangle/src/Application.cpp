@@ -323,6 +323,11 @@ void Application::initCreateFunctions()
                 commandManager_m.createCommandPool(getDeviceManagerRef());
             });
     createFunctions_m.emplace_back
+        (VkStage::VERTEX_BUFFER, [this]()
+            {
+                vertexBufferManager_m.createVertexBuffer();
+            });
+    createFunctions_m.emplace_back
         (VkStage::COMMAND_BUFFER, [this]()
             {
                 commandManager_m.createCommandBuffers

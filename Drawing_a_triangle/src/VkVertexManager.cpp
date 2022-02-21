@@ -1,6 +1,6 @@
-#include <VkVertexFactory.hpp>
+#include <VkVertexManager.hpp>
 
-void VkVertexFactory::createVerticesData() 
+void VkVertexManager::createVerticesData() 
 {
     vertices_m =
     {
@@ -10,7 +10,7 @@ void VkVertexFactory::createVerticesData()
     };
 };
 
-VkVertexInputBindingDescription VkVertexFactory::Vertex::getBindingDescription()
+VkVertexInputBindingDescription VkVertexManager::Vertex::getBindingDescription()
 {
     {
         VkVertexInputBindingDescription bindingDescription{};
@@ -25,7 +25,7 @@ VkVertexInputBindingDescription VkVertexFactory::Vertex::getBindingDescription()
 }
 
 std::array<VkVertexInputAttributeDescription, 2> 
-    VkVertexFactory::Vertex::getAttributeDescriptions()
+    VkVertexManager::Vertex::getAttributeDescriptions()
 {
     // how to extract a vertex attribute from a chunk of vertex data
     std::array<VkVertexInputAttributeDescription,2> attributeDescriptions{};
@@ -45,4 +45,13 @@ std::array<VkVertexInputAttributeDescription, 2>
     attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[1].offset = offsetof(Vertex, color_m);
     return attributeDescriptions;
+}
+
+void VkVertexManager::createVertexBuffer()
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof(vertices_m[0]) * vertices_m.size();
+    // specify the usage of the buffer
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 }

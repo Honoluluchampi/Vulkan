@@ -1,10 +1,11 @@
+#pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <array>
 
-class VkVertexFactory
+class VkVertexManager
 {
 public:
     struct Vertex
@@ -16,6 +17,8 @@ public:
             getAttributeDescriptions();
     };
     void createVerticesData();
+    void createVertexBuffer();
+    void destroyVertexBuffer();
 private:
     // use exactly the same position and color values as the shader file
     std::vector<Vertex> vertices_m;

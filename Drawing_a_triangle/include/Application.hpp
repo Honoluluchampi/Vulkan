@@ -13,6 +13,7 @@
 #include <VkCommandManager.hpp>
 #include <VkRenderer.hpp>
 #include <VkVertexFactory.hpp>
+#include <VkVertexBufferManager.hpp>
 
 class Application
 {
@@ -32,6 +33,7 @@ class Application
         GRAPHICS_PIPELINE,
         FRAME_BUFFERS,
         COMMAND_POOL,
+        VERTEX_BUFFER,
         COMMAND_BUFFER,
         RENDERER
     };
@@ -86,4 +88,5 @@ private:
     VkCommandManager commandManager_m;
     VkRenderer renderer_m;
     VkVertexFactory vertexFactory_m;
+    VkVertexBufferManager vertexBufferManager_m;
 };
