@@ -1,4 +1,5 @@
 #include <VkVertexManager.hpp>
+#include <iostream>
 
 void VkVertexManager::createVerticesData() 
 {
@@ -47,11 +48,23 @@ std::array<VkVertexInputAttributeDescription, 2>
     return attributeDescriptions;
 }
 
-void VkVertexManager::createVertexBuffer()
+void VkVertexManager::createVertexBuffer(const VkDevice& device)
 {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    // specify the size of the vertex buffer
     bufferInfo.size = sizeof(vertices_m[0]) * vertices_m.size();
     // specify the usage of the buffer
     bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    // buffers can be owned by a specific queue family or be shared 
+    // between multiple at the same time.
+    // vertex buffers are only used from the graphics queue
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer_m) != VK_SUCCESS)
+        std::runtime_error("failed to create vertex buffer!");
+}
+
+void VkVertexManager::destroyVertexBuffer(const VkDevice& device)
+{
+    vkDestroyBuffer(device, vertexBuffer_m, nullptr);
 }

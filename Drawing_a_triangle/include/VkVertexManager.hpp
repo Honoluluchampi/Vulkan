@@ -17,9 +17,13 @@ public:
             getAttributeDescriptions();
     };
     void createVerticesData();
-    void createVertexBuffer();
-    void destroyVertexBuffer();
+    void createVertexBuffer(const VkDevice& device);
+    void destroyVertexBuffer(const VkDevice& device);
 private:
     // use exactly the same position and color values as the shader file
     std::vector<Vertex> vertices_m;
+    // handle of the vertex buffer
+    VkBuffer vertexBuffer_m;
+    VkMemoryRequirements memRequirements_m;
+    
 };

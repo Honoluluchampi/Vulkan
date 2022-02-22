@@ -12,8 +12,7 @@
 #include <VkFramebufferFactory.hpp>
 #include <VkCommandManager.hpp>
 #include <VkRenderer.hpp>
-#include <VkVertexFactory.hpp>
-#include <VkVertexBufferManager.hpp>
+#include <VkVertexManager.hpp>
 
 class Application
 {
@@ -87,6 +86,5 @@ private:
     VkFramebufferFactory framebufferFactory_m;
     VkCommandManager commandManager_m;
     VkRenderer renderer_m;
-    VkVertexFactory vertexFactory_m;
-    VkVertexBufferManager vertexBufferManager_m;
+    VkVertexManager vertexManager_m;
 };

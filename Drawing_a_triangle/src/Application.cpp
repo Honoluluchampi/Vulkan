@@ -296,7 +296,7 @@ void Application::initCreateFunctions()
     createFunctions_m.emplace_back
         (VkStage::VERTEX_FACTORY, [this]()
             {
-               vertexFactory_m.createVerticesData();
+               vertexManager_m.createVerticesData();
             });
     createFunctions_m.emplace_back
         (VkStage::GRAPHICS_PIPELINE, [this]()
@@ -325,7 +325,7 @@ void Application::initCreateFunctions()
     createFunctions_m.emplace_back
         (VkStage::VERTEX_BUFFER, [this]()
             {
-                vertexBufferManager_m.createVertexBuffer();
+                vertexManager_m.createVertexBuffer(deviceManager_m.getDevice());
             });
     createFunctions_m.emplace_back
         (VkStage::COMMAND_BUFFER, [this]()
@@ -361,6 +361,11 @@ void Application::initDestroyFunctions()
         (VkStage::COMMAND_BUFFER, [this]()
         {
             commandManager_m.destroyCommandBuffers(getDeviceManagerRef().getDevice());
+        });
+    destroyFunctions_m.emplace_back
+        (VkStage::VERTEX_BUFFER, [this]()
+        {
+            vertexManager_m.destroyVertexBuffer(deviceManager_m.getDevice());
         });
     destroyFunctions_m.emplace_back
         (VkStage::COMMAND_POOL, [this]()
