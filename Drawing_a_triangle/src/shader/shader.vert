@@ -1,5 +1,5 @@
 #version 450
-#extension GL_ARB_separate_shader_objects : enable
+// #extension GL_ARB_separate_shader_objects : enable
 
 // the vertex shader takes input from a vertex buffer using the in keyword
 

@@ -325,7 +325,11 @@ void Application::initCreateFunctions()
     createFunctions_m.emplace_back
         (VkStage::VERTEX_BUFFER, [this]()
             {
-                vertexManager_m.createVertexBuffer(deviceManager_m.getDevice());
+                vertexManager_m.createVertexBuffer
+                (
+                    deviceManager_m.getDevice(),
+                    deviceManager_m.getPhysicalDevice()
+                );
             });
     createFunctions_m.emplace_back
         (VkStage::COMMAND_BUFFER, [this]()
@@ -336,7 +340,9 @@ void Application::initCreateFunctions()
                     graphicsPipeline_m.getRenderPassRef(), 
                     framebufferFactory_m.getSwapChainFrameBuffersRef(), 
                     graphicsPipeline_m.getGraphicsPipelineRef(),
-                    swapChainManager_m.getSwapChainExtentRef()
+                    swapChainManager_m.getSwapChainExtentRef(),
+                    vertexManager_m.getVertexBufferRef(),
+                    vertexManager_m.getVerticesSize()
                 );
             });
     createFunctions_m.emplace_back

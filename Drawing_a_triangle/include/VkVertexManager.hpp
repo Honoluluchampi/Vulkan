@@ -17,13 +17,17 @@ public:
             getAttributeDescriptions();
     };
     void createVerticesData();
-    void createVertexBuffer(const VkDevice& device);
+    void createVertexBuffer(const VkDevice& device, const VkPhysicalDevice& physicalDevice);
     void destroyVertexBuffer(const VkDevice& device);
+    VkBuffer& getVertexBufferRef();
+    size_t getVerticesSize();
 private:
+    void createVertexBufferImpl(const VkDevice& device);
+    void allocateVertexMemory(const VkDevice& device, const VkPhysicalDevice& physicalDevice);
+    void fillVertexBuffer(const VkDevice& device);
     // use exactly the same position and color values as the shader file
     std::vector<Vertex> vertices_m;
     // handle of the vertex buffer
     VkBuffer vertexBuffer_m;
-    VkMemoryRequirements memRequirements_m;
-    
+    VkDeviceMemory vertexBufferMemory_m;    
 };

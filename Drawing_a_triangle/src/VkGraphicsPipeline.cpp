@@ -4,7 +4,7 @@
 #include <iostream>
 #include <VkGraphicsPipeline.hpp>
 #include <VkRenderPass.hpp>
-#include <VkVertexFactory.hpp>
+#include <VkVertexManager.hpp>
 
 const VkRenderPass& VkGraphicsPipelineFactory::getRenderPassRef()
 {
@@ -140,8 +140,8 @@ VkPipelineVertexInputStateCreateInfo
     vertexInputInfo.sType = 
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     // accept vertex data
-    auto bindingDescription = VkVertexFactory::Vertex::getBindingDescription();
-    auto attributeDescriptions = VkVertexFactory::Vertex::getAttributeDescriptions();
+    auto bindingDescription = VkVertexManager::Vertex::getBindingDescription();
+    auto attributeDescriptions = VkVertexManager::Vertex::getAttributeDescriptions();
     vertexInputInfo.vertexBindingDescriptionCount = 1;
     vertexInputInfo.pVertexBindingDescriptions = &bindingDescription; //optional
     vertexInputInfo.vertexAttributeDescriptionCount = 

@@ -21,7 +21,7 @@ void VkCommandManager::createCommandPool(const VkDeviceManager& deviceManager)
 
 void VkCommandManager::createCommandBuffers
     (const VkDevice& device, const VkRenderPass& renderPass, const std::vector<VkFramebuffer>& swapChainFramebuffers,
-    const VkPipeline& graphicsPipeline, const VkExtent2D& swapChainExtent)
+    const VkPipeline& graphicsPipeline, const VkExtent2D& swapChainExtent, const VkBuffer& vertexBuffer, size_t verticesCount)
 {
     commandBuffers_m.resize(swapChainFramebuffers.size());
     // specify command pool and number of buffers to allocate
@@ -34,7 +34,7 @@ void VkCommandManager::createCommandBuffers
     if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers_m.data()) != VK_SUCCESS)
         throw std::runtime_error("failed to allocate command buffers!");
     // execute command buffer-relevant functions
-    executeCommandFunctions(renderPass, swapChainExtent, swapChainFramebuffers, graphicsPipeline);
+    executeCommandFunctions(renderPass, swapChainExtent, swapChainFramebuffers, graphicsPipeline, vertexBuffer, verticesCount);
 }
 
 void VkCommandManager::destroyCommandPool(const VkDevice& device)
@@ -52,7 +52,8 @@ void VkCommandManager::destroyCommandBuffers(const VkDevice& device)
 
 void VkCommandManager::executeCommandFunctions
     (const VkRenderPass& renderPass, const VkExtent2D& swapChainExtent,
-     const std::vector<VkFramebuffer>& swapChainFramebuffers, const VkPipeline& graphicsPipeline)
+     const std::vector<VkFramebuffer>& swapChainFramebuffers, const VkPipeline& graphicsPipeline,
+     const VkBuffer& vertexBuffer, size_t verticesCount)
 {
     for (size_t i = 0; i < commandBuffers_m.size(); i++) {
         // start reconding command buffers
@@ -84,11 +85,14 @@ void VkCommandManager::executeCommandFunctions
         // basic drawing commands
         // bind the graphics pipeline
         // the second parameter specifies if the pipeline object is a graphics or compute pipeline
-        vkCmdBindPipeline(commandBuffers_m[i], 
-            VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+        vkCmdBindPipeline(commandBuffers_m[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+        // bind the vertex buffer
+        VkBuffer vertexBuffers[] = {vertexBuffer};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(commandBuffers_m[i], 0, 1, vertexBuffers, offsets);
         // draw triangle
         // vertexCount, instanceCount, firstVertex, firstInstance
-        vkCmdDraw(commandBuffers_m[i], 3, 1, 0, 0);
+        vkCmdDraw(commandBuffers_m[i], static_cast<uint32_t>(verticesCount), 1, 0, 0);
 
         // finish render pass and recording the comand buffer
         vkCmdEndRenderPass(commandBuffers_m[i]);
