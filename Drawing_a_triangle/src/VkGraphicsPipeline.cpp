@@ -140,8 +140,8 @@ VkPipelineVertexInputStateCreateInfo
     vertexInputInfo.sType = 
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     // accept vertex data
-    auto bindingDescription = VkVertexManager::Vertex::getBindingDescription();
-    auto attributeDescriptions = VkVertexManager::Vertex::getAttributeDescriptions();
+    static auto bindingDescription = VkVertexManager::Vertex::getBindingDescription();
+    static auto attributeDescriptions = VkVertexManager::Vertex::getAttributeDescriptions();
     vertexInputInfo.vertexBindingDescriptionCount = 1;
     vertexInputInfo.pVertexBindingDescriptions = &bindingDescription; //optional
     vertexInputInfo.vertexAttributeDescriptionCount = 
