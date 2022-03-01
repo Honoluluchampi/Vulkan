@@ -4,7 +4,12 @@
 
 void VkVertexManager::createVerticesData() 
 {
-    
+    vertices_m=
+    {
+        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, 0.5f},  {0.0f, 1.0f, 0.0f}},
+        {{-0.5f, 0.5f},  {0.0f, 0.0f, 1.0f}}
+    };
 };
 
 VkVertexInputBindingDescription VkVertexManager::Vertex::getBindingDescription()

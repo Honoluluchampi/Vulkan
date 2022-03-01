@@ -52,6 +52,14 @@ void VkGraphicsPipelineFactory::createGraphicsPipeline
         = {createVertexShaderStageInfo(), createFragmentShaderStageInfo()};
     // fixed functions
     auto vertexInputInfo    =   createVertexInputInfo();
+    // accept vertex data
+    auto bindingDescription = VkVertexManager::Vertex::getBindingDescription();
+    auto attributeDescriptions = VkVertexManager::Vertex::getAttributeDescriptions();
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription; //optional
+    vertexInputInfo.vertexAttributeDescriptionCount = 
+        static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data(); //optional
     auto inputAssemblyInfo  =   createInputAssemblyInfo();
     // viewport
     auto viewport   =           createViewport(swapChainExtent);
@@ -139,14 +147,6 @@ VkPipelineVertexInputStateCreateInfo
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = 
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    // accept vertex data
-    static auto bindingDescription = VkVertexManager::Vertex::getBindingDescription();
-    static auto attributeDescriptions = VkVertexManager::Vertex::getAttributeDescriptions();
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription; //optional
-    vertexInputInfo.vertexAttributeDescriptionCount = 
-        static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data(); //optional
     return vertexInputInfo;
 }
 

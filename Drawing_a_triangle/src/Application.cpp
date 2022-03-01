@@ -14,7 +14,7 @@ constexpr uint32_t HEIGHT = 600;
 Application::Application() : deviceManager_m(), swapChainManager_m(getDeviceManagerRef(), window_m)
 {
     validationLayers_m = {
-    "VK_LAYER_LUNARG_standard_validation"
+    "VK_LAYER_KHRONOS_validation"
     };
     #ifdef NDEBUG
         enableValidationLayers_m = false;
