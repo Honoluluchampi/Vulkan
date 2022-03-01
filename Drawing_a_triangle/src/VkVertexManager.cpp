@@ -47,33 +47,6 @@ std::array<VkVertexInputAttributeDescription, 2>
     return attributeDescriptions;
 }
 
-void VkVertexManager::createVertexBuffer
-    (const VkDevice& device, const VkPhysicalDevice& physicalDevice)
-{
-    createVertexBufferImpl(device);
-    allocateVertexMemory(device, physicalDevice);
-    // associate the memory with the buffer
-    vkBindBufferMemory(device, vertexBuffer_m, vertexBufferMemory_m, 0);
-    // copy the vertex data to the buffer
-    fillVertexBuffer(device);
-}
-
-void VkVertexManager::createVertexBufferImpl(const VkDevice& device)
-{
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    // specify the size of the vertex buffer
-    bufferInfo.size = sizeof(vertices_m[0]) * vertices_m.size();
-    // specify the usage of the buffer
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    // buffers can be owned by a specific queue family or be shared 
-    // between multiple at the same time.
-    // vertex buffers are only used from the graphics queue
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer_m) != VK_SUCCESS)
-        throw std::runtime_error("failed to create vertex buffer!");
-}
-
 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, 
     const VkPhysicalDevice& physicalDevice)
 {
@@ -90,25 +63,38 @@ uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties,
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void VkVertexManager::allocateVertexMemory
-    (const VkDevice& device, const VkPhysicalDevice& physicalDevice)
+void VkVertexManager::createBuffer(const VkDevice& device, const VkPhysicalDevice& physicalDevice, VkDeviceSize size, 
+    VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
-    // memory requirements
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device, vertexBuffer_m, &memRequirements);
-
+    // buffer creation
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    if(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+        throw std::runtime_error("failed to create buffer!");
     // memory allocation
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    // we need two properties of the memory type
-    allocInfo.memoryTypeIndex = findMemoryType(
-        memRequirements.memoryTypeBits,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        physicalDevice);
-    if (vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemory_m) != VK_SUCCESS)
-        throw std::runtime_error("failed to allocate vertex buffer memory!");
+    allocInfo.memoryTypeIndex = 
+        findMemoryType(memRequirements.memoryTypeBits, properties, physicalDevice);
+    if(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+        throw std::runtime_error("failed to allocate buffer memory!");
+    // associate the memory with the buffer
+    vkBindBufferMemory(device, vertexBuffer_m, vertexBufferMemory_m, 0);
+}
+
+void VkVertexManager::createVertexBuffer
+    (const VkDevice& device, const VkPhysicalDevice& physicalDevice)
+{
+    createBuffer(device, physicalDevice, sizeof(vertices_m[0]) * vertices_m.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer_m, vertexBufferMemory_m);
+    // copy the vertex data to the buffer
+    fillVertexBuffer(device);
 }
 
 void VkVertexManager::fillVertexBuffer(const VkDevice& device)

@@ -22,8 +22,8 @@ public:
     VkBuffer& getVertexBufferRef();
     size_t getVerticesSize();
 private:
-    void createVertexBufferImpl(const VkDevice& device);
-    void allocateVertexMemory(const VkDevice& device, const VkPhysicalDevice& physicalDevice);
+    void createBuffer(const VkDevice& device, const VkPhysicalDevice& physicalDevice, VkDeviceSize size, 
+        VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void fillVertexBuffer(const VkDevice& device);
     // use exactly the same position and color values as the shader file
     std::vector<Vertex> vertices_m;
