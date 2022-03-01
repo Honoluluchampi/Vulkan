@@ -134,7 +134,7 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies
         // Note: you can probably enable DRI3 in your Xorg config
         vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface_m, &presentSupport);
         if (presentSupport) indices.presentFamily_m = i;
-        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) {
             indices.graphicsFamily_m = i;
             if(presentSupport) break;
         }
@@ -145,6 +145,8 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::findQueueFamilies
 
 inline bool VkDeviceManager::QueueFamilyIndices::isComplete()
 {
+    // changed to transfer queue
+    // return graphicsFamily_m.has_value() && presentFamily_m.has_value();
     return graphicsFamily_m.has_value() && presentFamily_m.has_value();
 }
 
