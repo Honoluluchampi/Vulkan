@@ -327,8 +327,8 @@ void Application::initCreateFunctions()
             {
                 vertexManager_m.createVertexBuffer
                 (
-                    deviceManager_m.getDevice(),
-                    deviceManager_m.getPhysicalDevice()
+                    getDeviceManagerRef(),
+                    commandManager_m.getCommandPoolRef()
                 );
             });
     createFunctions_m.emplace_back

@@ -16,6 +16,7 @@ public:
     void destroyCommandPool(const VkDevice& device);
     void destroyCommandBuffers(const VkDevice& device);
     const std::vector<VkCommandBuffer>& getCommandBufferRef() const;
+    VkCommandPool& getCommandPoolRef();
 private:
     void executeCommandFunctions(const VkRenderPass& renderPass, const VkExtent2D& swapChainExtent, 
         const std::vector<VkFramebuffer>& swapChainFramebuffers, const VkPipeline& graphicsPipeline,

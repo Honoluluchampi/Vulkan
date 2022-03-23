@@ -85,16 +85,35 @@ void VkVertexManager::createBuffer(const VkDevice& device, const VkPhysicalDevic
     if(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
         throw std::runtime_error("failed to allocate buffer memory!");
     // associate the memory with the buffer
-    vkBindBufferMemory(device, vertexBuffer_m, vertexBufferMemory_m, 0);
+    vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
 void VkVertexManager::createVertexBuffer
-    (const VkDevice& device, const VkPhysicalDevice& physicalDevice)
+    (const VkDeviceManager& deviceManager, VkCommandPool& commandPool)
 {
-    createBuffer(device, physicalDevice, sizeof(vertices_m[0]) * vertices_m.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+    auto& device = deviceManager.getDevice();
+    auto& physicalDevice = deviceManager.getPhysicalDevice();
+    auto& graphicsQueue = deviceManager.getGraphicsQueueRef();
+    // use a host visible buffer as temporary buffer, use a device local buffer as actual vertex buffer
+    VkDeviceSize bufferSize = sizeof(vertices_m[0]) * vertices_m.size();
+    // temporary buffer
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    // filling in the data
+    void* data;
+    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, vertices_m.data(), static_cast<size_t>(bufferSize));
+    vkUnmapMemory(device, stagingBufferMemory);
+
+    createBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer_m, vertexBufferMemory_m);
     // copy the vertex data to the buffer
-    fillVertexBuffer(device);
+    copyBuffer(device, commandPool, graphicsQueue, stagingBuffer, vertexBuffer_m, bufferSize);
+
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
 void VkVertexManager::fillVertexBuffer(const VkDevice& device)
@@ -105,6 +124,44 @@ void VkVertexManager::fillVertexBuffer(const VkDevice& device)
     std::memcpy(data, vertices_m.data(), sizeof(vertices_m[0]) * vertices_m.size());
     vkUnmapMemory(device, vertexBufferMemory_m);
 }
+
+void VkVertexManager::copyBuffer(const VkDevice& device, VkCommandPool& commandPool, const VkQueue& graphicsQueue,
+    VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size)
+{
+    // command buffer for memory transfer operations
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+    // record the command buffer
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0; // optional
+    copyRegion.dstOffset = 0; // optional
+    copyRegion.size = size;
+    // transfer the contents of buffers
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+    // end recording
+    vkEndCommandBuffer(commandBuffer);
+    // execute the commnad buffer to complete the transfer
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(graphicsQueue);
+    vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
 
 void VkVertexManager::destroyVertexBuffer(const VkDevice& device)
 {

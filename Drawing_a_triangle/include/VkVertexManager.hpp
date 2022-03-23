@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <array>
+#include <VkDeviceManager.hpp>
 
 class VkVertexManager
 {
@@ -17,7 +18,7 @@ public:
             getAttributeDescriptions();
     };
     void createVerticesData();
-    void createVertexBuffer(const VkDevice& device, const VkPhysicalDevice& physicalDevice);
+    void createVertexBuffer(const VkDeviceManager& deviceManager, VkCommandPool& commandPool);
     void destroyVertexBuffer(const VkDevice& device);
     VkBuffer& getVertexBufferRef();
     size_t getVerticesSize();
@@ -25,6 +26,8 @@ private:
     void createBuffer(const VkDevice& device, const VkPhysicalDevice& physicalDevice, VkDeviceSize size, 
         VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void fillVertexBuffer(const VkDevice& device);
+    void copyBuffer(const VkDevice& device, VkCommandPool& commandPool, const VkQueue& graphicsQueue, 
+        VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size);
     // use exactly the same position and color values as the shader file
     std::vector<Vertex> vertices_m;
     // handle of the vertex buffer
