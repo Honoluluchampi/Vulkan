@@ -3,7 +3,7 @@ COMPILER = g++
 CFLAGS = -std=c++17 -g3
 OS = "Ubuntu" # Mac
 ifneq ($(OS), "Ubuntu")
-	VULKANDIR = /home/honolulu/programs/downloaded-libraries/vulkan1.3.204.0/x86_64
+	VULKANDIR = /home/honolulu/programs/downloaded_libraries/vulkanSDK/x86_64
 	GLFWDIR = /usr/local/Cellar/glfw/3.3.6
 	LDFLAGS = $(VULKANDIR)/lib/libvulkan.so.1.3.204 $(VULKANDIR)/lib/libvulkan.so.1 /usr/lib/x86_64-linux-gnu/libglfw.so.3.3
 	INCLUDE = -I/usr/include -I$(VULKANDIR)/include -I./include
